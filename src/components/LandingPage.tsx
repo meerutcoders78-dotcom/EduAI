@@ -1,100 +1,177 @@
-import { motion } from 'motion/react';
-import { ArrowRight, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ArrowRight, Sparkles, Target, TrendingUp, GraduationCap, Rocket, Brain, Globe } from 'lucide-react';
 import { SignInButton, SignUpButton, useUser } from '@clerk/clerk-react';
+import { LoadingScreen } from './LoadingScreen';
 
 export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
   const { isSignedIn } = useUser();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-4xl mx-auto"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              <Sparkles className="w-4 h-4" />
-              <span>AI-Powered Skilling for 2026</span>
+    <>
+      <AnimatePresence>
+        {isLoading && <LoadingScreen />}
+      </AnimatePresence>
+
+      <div className="min-h-screen bg-background selection:bg-primary/20">
+        {/* Navigation */}
+        <nav className="fixed top-0 w-full z-40 glass h-16 flex items-center px-6 justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground mb-6">
-              Master the Future with <span className="text-primary">EduAI</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
-              Personalized learning roadmaps powered by Gemini 3.1 Pro. 
-              Get real-time job market insights and stay ahead of the curve.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              {isSignedIn ? (
+            <span className="text-xl font-bold tracking-tight">EduAI</span>
+          </div>
+          <div className="flex items-center gap-4">
+            {/* Sign In disabled for testing
+            {!isSignedIn && (
+              <SignInButton mode="modal">
+                <button className="text-sm font-medium hover:text-primary transition-colors">Sign In</button>
+              </SignInButton>
+            )}
+            */}
+          </div>
+        </nav>
+
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-20 overflow-hidden">
+          <div className="container mx-auto px-6">
+            <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-bold mb-8 border border-primary/20"
+              >
+                <Rocket className="w-4 h-4" />
+                <span>The Future of Learning is Here</span>
+              </motion.div>
+              
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-6xl md:text-8xl font-extrabold tracking-tight mb-8 leading-[0.9]"
+              >
+                Your Personal <br />
+                <span className="gradient-text">AI Study Partner</span>
+              </motion.h1>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-xl text-muted-foreground mb-12 max-w-2xl leading-relaxed"
+              >
+                Stop guessing what to learn. EduAI uses Gemini 3.1 Pro to build 
+                personalized roadmaps and real-time job market insights just for you.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-col sm:flex-row items-center gap-4"
+              >
+                {/* Testing Mode: Always show "Enter Dashboard" */}
                 <button
                   onClick={onGetStarted}
-                  className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold flex items-center gap-2 hover:opacity-90 transition-all"
+                  className="px-10 py-5 bg-primary text-primary-foreground rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
                 >
-                  Go to Dashboard <ArrowRight className="w-5 h-5" />
+                  Enter Dashboard <ArrowRight className="w-6 h-6" />
                 </button>
-              ) : (
-                <>
+
+                {/* 
+                {isSignedIn ? (
+                  <button
+                    onClick={onGetStarted}
+                    className="px-10 py-5 bg-primary text-primary-foreground rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
+                  >
+                    Enter Dashboard <ArrowRight className="w-6 h-6" />
+                  </button>
+                ) : (
                   <SignUpButton mode="modal">
-                    <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold flex items-center gap-2 hover:opacity-90 transition-all">
-                      Get Started Free <ArrowRight className="w-5 h-5" />
+                    <button className="px-10 py-5 bg-primary text-primary-foreground rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20">
+                      Start Learning Free <ArrowRight className="w-6 h-6" />
                     </button>
                   </SignUpButton>
-                  <SignInButton mode="modal">
-                    <button className="px-8 py-4 bg-secondary text-secondary-foreground rounded-xl font-semibold hover:bg-accent transition-all">
-                      Sign In
-                    </button>
-                  </SignInButton>
-                </>
-              )}
+                )}
+                */}
+              </motion.div>
             </div>
-          </motion.div>
-        </div>
-
-        {/* Background Decoration */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-24 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={<Target className="w-8 h-8 text-primary" />}
-              title="Personalized Roadmaps"
-              description="AI-generated learning paths tailored to your career goals and current skill level."
-            />
-            <FeatureCard
-              icon={<TrendingUp className="w-8 h-8 text-primary" />}
-              title="Real-time Market Data"
-              description="Powered by Google Search Grounding to provide the latest salary trends and job demand."
-            />
-            <FeatureCard
-              icon={<Sparkles className="w-8 h-8 text-primary" />}
-              title="AI Tutoring"
-              description="Interactive chat interface to answer your technical questions and guide your learning."
-            />
           </div>
-        </div>
-      </section>
-    </div>
+
+          {/* Background Elements */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
+            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-32 relative">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-20">
+              <h2 className="text-4xl font-bold mb-4">Why Students Love EduAI</h2>
+              <p className="text-muted-foreground">Everything you need to succeed in the modern world.</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <FeatureCard
+                icon={<Brain className="w-6 h-6" />}
+                title="AI Roadmaps"
+                description="Custom paths for any skill, from Coding to Digital Marketing."
+                color="bg-blue-500"
+              />
+              <FeatureCard
+                icon={<Globe className="w-6 h-6" />}
+                title="Market Trends"
+                description="Real-time data on what skills are actually in demand right now."
+                color="bg-purple-500"
+              />
+              <FeatureCard
+                icon={<GraduationCap className="w-6 h-6" />}
+                title="Study Partner"
+                description="A 24/7 AI tutor that understands your syllabus and goals."
+                color="bg-pink-500"
+              />
+              <FeatureCard
+                icon={<Target className="w-6 h-6" />}
+                title="Goal Tracking"
+                description="Set your career targets and let AI guide you to the finish line."
+                color="bg-orange-500"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-12 border-t border-border mt-20">
+          <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
+            <p>© 2026 EduAI. Built for students, by AI.</p>
+          </div>
+        </footer>
+      </div>
+    </>
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode; title: string; description: string; color: string }) {
   return (
     <motion.div
-      whileHover={{ y: -5 }}
-      className="p-8 rounded-2xl bg-card border border-border shadow-sm"
+      whileHover={{ y: -10 }}
+      className="p-8 rounded-3xl bg-card border border-border shadow-sm hover:shadow-2xl transition-all group"
     >
-      <div className="mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground">{description}</p>
+      <div className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform`}>
+        {icon}
+      </div>
+      <h3 className="text-xl font-bold mb-3">{title}</h3>
+      <p className="text-muted-foreground leading-relaxed">{description}</p>
     </motion.div>
   );
 }

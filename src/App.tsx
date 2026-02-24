@@ -41,6 +41,14 @@ export default function App() {
             <ThemeToggle />
           </div>
 
+          {/* Testing Mode: Bypassing Auth Guards */}
+          {showDashboard ? (
+            <Dashboard />
+          ) : (
+            <LandingPage onGetStarted={() => setShowDashboard(true)} />
+          )}
+
+          {/* 
           <SignedOut>
             <LandingPage onGetStarted={() => setShowDashboard(true)} />
           </SignedOut>
@@ -52,6 +60,7 @@ export default function App() {
               <LandingPage onGetStarted={() => setShowDashboard(true)} />
             )}
           </SignedIn>
+          */}
         </div>
       </ThemeProvider>
     </ClerkProvider>
