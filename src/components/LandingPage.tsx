@@ -29,13 +29,11 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
             <span className="text-xl font-bold tracking-tight">EduAI</span>
           </div>
           <div className="flex items-center gap-4">
-            {/* Sign In disabled for testing
             {!isSignedIn && (
               <SignInButton mode="modal">
                 <button className="text-sm font-medium hover:text-primary transition-colors">Sign In</button>
               </SignInButton>
             )}
-            */}
           </div>
         </nav>
 
@@ -78,15 +76,6 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                 transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row items-center gap-4"
               >
-                {/* Testing Mode: Always show "Enter Dashboard" */}
-                <button
-                  onClick={onGetStarted}
-                  className="px-10 py-5 bg-primary text-primary-foreground rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
-                >
-                  Enter Dashboard <ArrowRight className="w-6 h-6" />
-                </button>
-
-                {/* 
                 {isSignedIn ? (
                   <button
                     onClick={onGetStarted}
@@ -101,7 +90,6 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                     </button>
                   </SignUpButton>
                 )}
-                */}
               </motion.div>
             </div>
           </div>

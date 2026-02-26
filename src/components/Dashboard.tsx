@@ -155,22 +155,11 @@ export function Dashboard() {
 
         <div className="p-4 border-t border-border bg-secondary/20">
           <div className={cn("flex items-center gap-3 p-2 rounded-2xl", !isSidebarOpen && "justify-center")}>
-            {/* UserButton disabled for testing
             <UserButton afterSignOutUrl="/" />
             {isSidebarOpen && (
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-bold truncate">{user?.fullName}</span>
+                <span className="text-sm font-bold truncate">{user?.fullName || 'Student'}</span>
                 <span className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</span>
-              </div>
-            )}
-            */}
-            <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-primary" />
-            </div>
-            {isSidebarOpen && (
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-bold truncate">Test Student</span>
-                <span className="text-xs text-muted-foreground truncate">test@eduai.com</span>
               </div>
             )}
           </div>
