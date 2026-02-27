@@ -66,7 +66,7 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                 transition={{ delay: 0.2 }}
                 className="text-xl text-muted-foreground mb-12 max-w-2xl leading-relaxed"
               >
-                Stop guessing what to learn. EduAI uses Gemini 3.1 Pro to build 
+                Stop guessing what to learn. EduAI helps you build 
                 personalized roadmaps and real-time job market insights just for you.
               </motion.p>
 
@@ -141,7 +141,7 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
         {/* Footer */}
         <footer className="py-12 border-t border-border mt-20">
           <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
-            <p>© 2026 EduAI. Built for students, by AI.</p>
+            <p>© 2026 EduAI. Built for students, by Chirag.</p>
           </div>
         </footer>
       </div>

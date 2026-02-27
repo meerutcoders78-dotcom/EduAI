@@ -175,7 +175,7 @@ export function Dashboard() {
               {activeTab === 'overview' ? `Welcome back, ${user?.firstName || 'Student'}!` : activeTab.replace('-', ' ')}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {activeTab === 'overview' ? "Here's what's happening in your learning journey." : "Powered by Gemini 3.1 Pro"}
+              {activeTab === 'overview' ? "Here's what's happening in your learning journey." : "Made by Chirag"}
             </p>
           </div>
         </header>
