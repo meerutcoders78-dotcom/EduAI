@@ -21,18 +21,30 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
 
       <div className="min-h-screen bg-background selection:bg-primary/20">
         {/* Navigation */}
-        <nav className="fixed top-0 w-full z-40 glass h-16 flex items-center px-6 justify-between">
+        <nav className="fixed top-0 w-full z-40 glass h-16 flex items-center px-6 pr-16 justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight">EduAI</span>
+            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">EduAI</span>
           </div>
           <div className="flex items-center gap-4">
-            {!isSignedIn && (
-              <SignInButton mode="modal">
-                <button className="text-sm font-medium hover:text-primary transition-colors">Sign In</button>
-              </SignInButton>
+            {!isSignedIn ? (
+              <>
+                <SignInButton mode="modal">
+                  <button className="text-sm font-medium hover:text-primary transition-colors">Sign In</button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-lg shadow-primary/20">Sign Up</button>
+                </SignUpButton>
+              </>
+            ) : (
+              <button 
+                onClick={onGetStarted}
+                className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-lg shadow-primary/20"
+              >
+                Go to Dashboard
+              </button>
             )}
           </div>
         </nav>
@@ -57,7 +69,7 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                 className="text-6xl md:text-8xl font-extrabold tracking-tight mb-8 leading-[0.9]"
               >
                 Your Personal <br />
-                <span className="gradient-text">AI Study Partner</span>
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-500 to-purple-600 animate-gradient">AI Study Partner</span>
               </motion.h1>
               
               <motion.p
@@ -79,13 +91,13 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                 {isSignedIn ? (
                   <button
                     onClick={onGetStarted}
-                    className="px-10 py-5 bg-primary text-primary-foreground rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
+                    className="px-10 py-5 bg-gradient-to-br from-primary to-blue-600 text-primary-foreground rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
                   >
                     Enter Dashboard <ArrowRight className="w-6 h-6" />
                   </button>
                 ) : (
                   <SignUpButton mode="modal">
-                    <button className="px-10 py-5 bg-primary text-primary-foreground rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20">
+                    <button className="px-10 py-5 bg-gradient-to-br from-primary to-blue-600 text-primary-foreground rounded-2xl font-bold text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20">
                       Start Learning Free <ArrowRight className="w-6 h-6" />
                     </button>
                   </SignUpButton>

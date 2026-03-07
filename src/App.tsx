@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './components/ThemeProvider';
 import { LandingPage } from './components/LandingPage';
 import { Dashboard } from './components/Dashboard';
 import { ThemeToggle } from './components/ThemeToggle';
+import { ModulePage } from './components/ModulePage';
 import { Settings } from 'lucide-react';
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -36,23 +38,40 @@ export default function App() {
   return (
     <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
       <ThemeProvider>
-        <div className="relative min-h-screen">
-          <div className="fixed top-4 right-4 z-50">
-            <ThemeToggle />
+        <BrowserRouter>
+          <div className="relative min-h-screen">
+            <div className="fixed top-4 right-4 z-50">
+              <ThemeToggle />
+            </div>
+
+            <Routes>
+              <Route path="/" element={
+                <>
+                  <SignedOut>
+                    <LandingPage onGetStarted={() => setShowDashboard(true)} />
+                  </SignedOut>
+                  <SignedIn>
+                    {showDashboard ? <Navigate to="/dashboard" /> : <LandingPage onGetStarted={() => setShowDashboard(true)} />}
+                  </SignedIn>
+                </>
+              } />
+              
+              <Route path="/dashboard" element={
+                <SignedIn>
+                  <Dashboard />
+                </SignedIn>
+              } />
+
+              <Route path="/study-area/:moduleId" element={
+                <SignedIn>
+                  <ModulePage />
+                </SignedIn>
+              } />
+
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
           </div>
-
-          <SignedOut>
-            <LandingPage onGetStarted={() => setShowDashboard(true)} />
-          </SignedOut>
-
-          <SignedIn>
-            {showDashboard ? (
-              <Dashboard />
-            ) : (
-              <LandingPage onGetStarted={() => setShowDashboard(true)} />
-            )}
-          </SignedIn>
-        </div>
+        </BrowserRouter>
       </ThemeProvider>
     </ClerkProvider>
   );

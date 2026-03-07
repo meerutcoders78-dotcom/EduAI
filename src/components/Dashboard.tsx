@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -15,33 +16,56 @@ import {
   User,
   Bot,
   X,
-  ArrowRight
+  Award,
+  ExternalLink,
+  Linkedin
 } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/clerk-react';
 import { generateSkillRoadmap, getRecommendedSkills } from '../services/geminiService';
 import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
+import { MODULES, ModuleInfo } from '../constants/modules';
+import { Certificate as CertificateComponent } from './Certificate';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
+interface Certificate {
+  id: number;
+  module_name: string;
+  issued_at: string;
+}
+
 export function Dashboard() {
   const { user } = useUser();
-  const [activeTab, setActiveTab] = useState<'overview' | 'tutor' | 'market' | 'study'>('overview');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'overview' | 'tutor' | 'market' | 'study' | 'certificates'>('overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [roadmap, setRoadmap] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [recommendedSkills, setRecommendedSkills] = useState<string | null>(null);
   const [isSkillsLoading, setIsSkillsLoading] = useState(true);
-  const [selectedSyllabus, setSelectedSyllabus] = useState<string | null>(null);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
   
   // Progress State
   const [completedModules, setCompletedModules] = useState<string[]>([]);
   const [completedRoadmaps, setCompletedRoadmaps] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
 
-  const totalModules = 12; // 3 modules per card * 4 cards
+  const filteredModules = MODULES.filter(m => {
+    const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         m.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || m.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = ['All', ...Array.from(new Set(MODULES.map(m => m.category)))];
+
+  const totalModules = MODULES.length;
   const progress = Math.round((completedModules.length / totalModules) * 100);
 
   // AI Tutor Chat State
@@ -52,18 +76,72 @@ export function Dashboard() {
 
   useEffect(() => {
     const fetchSkills = async () => {
+      const CACHE_KEY = 'eduai_recommended_skills';
+      const CACHE_TIME_KEY = 'eduai_recommended_skills_time';
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+
+      const cachedSkills = localStorage.getItem(CACHE_KEY);
+      const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+      const now = Date.now();
+
+      // Use cache if it's fresh (less than 24 hours old)
+      if (cachedSkills && cachedTime && (now - parseInt(cachedTime)) < ONE_DAY) {
+        setRecommendedSkills(cachedSkills);
+        setIsSkillsLoading(false);
+        return;
+      }
+
       setIsSkillsLoading(true);
       try {
         const skills = await getRecommendedSkills();
-        setRecommendedSkills(skills);
-      } catch (error) {
+        if (skills) {
+          setRecommendedSkills(skills);
+          localStorage.setItem(CACHE_KEY, skills);
+          localStorage.setItem(CACHE_TIME_KEY, now.toString());
+        }
+      } catch (error: any) {
         console.error("Failed to fetch skills", error);
+        // If API fails but we have old cache, use it as fallback
+        if (cachedSkills) {
+          setRecommendedSkills(cachedSkills);
+        } else {
+          setRecommendedSkills("### 🚀 Trending Skills for 2026\n\nWe're currently experiencing high demand for our AI insights. Please check back in a few minutes for the latest trending skills in Web Development, AI, and Cloud Computing!");
+        }
       } finally {
         setIsSkillsLoading(false);
       }
     };
     fetchSkills();
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      try {
+        const [progressRes, certsRes] = await Promise.all([
+          fetch(`/api/progress/${user.id}`),
+          fetch(`/api/certificates/${user.id}`)
+        ]);
+        const progressData = await progressRes.json();
+        const certsData = await certsRes.json();
+        setCompletedModules(progressData);
+        setCertificates(certsData);
+        
+        // Calculate completed roadmaps (all 3 modules done)
+        const moduleIds = ['web-dev', 'data-ai', 'mobile', 'cloud'];
+        let count = 0;
+        moduleIds.forEach(id => {
+          if (['m1', 'm2', 'm3'].every(step => progressData.includes(`${id}-${step}`))) {
+            count++;
+          }
+        });
+        setCompletedRoadmaps(count);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      }
+    };
+    fetchData();
+  }, [user]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -86,8 +164,15 @@ export function Dashboard() {
       if (input.toLowerCase().includes('roadmap') || input.toLowerCase().includes('path')) {
         setCompletedRoadmaps(prev => prev + 1);
       }
-    } catch (error) {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: "I'm having trouble connecting right now. Let's try again in a moment." }]);
+    } catch (error: any) {
+      console.error("Chat error", error);
+      let errorMessage = "I'm having trouble connecting right now. Let's try again in a moment.";
+      
+      if (error.message?.includes('429') || error.message?.includes('RESOURCE_EXHAUSTED')) {
+        errorMessage = "I've been helping so many students today that I need a quick breather! 😅 Please try again in a few minutes, or explore our existing modules in the **Study Area** while I recharge.";
+      }
+      
+      setChatMessages(prev => [...prev, { role: 'assistant', content: errorMessage }]);
     } finally {
       setIsChatLoading(false);
     }
@@ -110,7 +195,7 @@ export function Dashboard() {
       >
         <div className="p-6 flex items-center justify-between">
           {isSidebarOpen && (
-            <span className="text-2xl font-black tracking-tighter gradient-text flex items-center gap-2">
+            <span className="text-2xl font-black tracking-tighter gradient-text animate-gradient flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-primary" /> EduAI
             </span>
           )}
@@ -151,6 +236,13 @@ export function Dashboard() {
             onClick={() => setActiveTab('market')}
             collapsed={!isSidebarOpen}
           />
+          <SidebarItem 
+            icon={<Award />} 
+            label="My Certificates" 
+            active={activeTab === 'certificates'} 
+            onClick={() => setActiveTab('certificates')}
+            collapsed={!isSidebarOpen}
+          />
         </nav>
 
         <div className="p-4 border-t border-border bg-secondary/20">
@@ -171,10 +263,10 @@ export function Dashboard() {
         {/* Header */}
         <header className="h-20 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-40">
           <div className="flex flex-col">
-            <h2 className="text-xl font-bold capitalize tracking-tight">
+            <h2 className="text-xl font-bold capitalize tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
               {activeTab === 'overview' ? `Welcome back, ${user?.firstName || 'Student'}!` : activeTab.replace('-', ' ')}
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground font-medium">
               {activeTab === 'overview' ? "Here's what's happening in your learning journey." : "Made by Chirag"}
             </p>
           </div>
@@ -345,124 +437,136 @@ export function Dashboard() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
+                className="max-w-6xl mx-auto space-y-10"
+              >
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center">
+                      <BookOpen className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bold tracking-tight">Study Area</h2>
+                      <p className="text-muted-foreground">Explore 200+ specialized technical modules.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <input 
+                        type="text"
+                        placeholder="Search modules..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-12 pr-6 py-3 bg-card border border-border rounded-2xl w-full sm:w-64 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      />
+                    </div>
+                    <select 
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="px-6 py-3 bg-card border border-border rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-sm"
+                    >
+                      {categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredModules.map(module => (
+                    <StudyCard 
+                      key={module.id}
+                      id={module.id}
+                      title={module.title}
+                      description={module.description}
+                      category={module.category}
+                      isCompleted={completedModules.includes(module.id)}
+                    />
+                  ))}
+                </div>
+
+                {filteredModules.length === 0 && (
+                  <div className="p-20 text-center bg-secondary/20 rounded-[40px] border-2 border-dashed border-border">
+                    <p className="text-muted-foreground font-medium">No modules found matching your search.</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'certificates' && (
+              <motion.div
+                key="certificates"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
                 className="max-w-5xl mx-auto space-y-8"
               >
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center">
-                    <BookOpen className="w-6 h-6" />
+                  <div className="w-12 h-12 bg-pink-500/10 text-pink-500 rounded-2xl flex items-center justify-center">
+                    <Award className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Study Area</h2>
-                    <p className="text-muted-foreground">Select a career path to start learning.</p>
+                    <h2 className="text-3xl font-bold tracking-tight">My Certificates</h2>
+                    <p className="text-muted-foreground">Your verified achievements and professional credentials.</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <StudyCard 
-                    id="web-dev"
-                    title="Full Stack Web Development"
-                    description="Master both frontend and backend technologies to build complete web applications."
-                    topics={["HTML/CSS", "JavaScript/TypeScript", "React", "Node.js", "Databases"]}
-                    completedModules={completedModules.filter(id => id.startsWith('web-dev-'))}
-                    onViewSyllabus={() => setSelectedSyllabus("Full Stack Web Development")}
-                  />
-                  <StudyCard 
-                    id="data-ai"
-                    title="Data Science & AI"
-                    description="Learn to analyze data and build intelligent systems using Python and Machine Learning."
-                    topics={["Python", "Statistics", "Pandas/NumPy", "Scikit-Learn", "Neural Networks"]}
-                    completedModules={completedModules.filter(id => id.startsWith('data-ai-'))}
-                    onViewSyllabus={() => setSelectedSyllabus("Data Science & AI")}
-                  />
-                  <StudyCard 
-                    id="mobile"
-                    title="Mobile App Development"
-                    description="Create stunning mobile experiences for iOS and Android using modern frameworks."
-                    topics={["React Native", "Swift/Kotlin", "Mobile UI Design", "App Store Deployment"]}
-                    completedModules={completedModules.filter(id => id.startsWith('mobile-'))}
-                    onViewSyllabus={() => setSelectedSyllabus("Mobile App Development")}
-                  />
-                  <StudyCard 
-                    id="cloud"
-                    title="Cloud Engineering"
-                    description="Design and manage scalable infrastructure on AWS, Azure, or Google Cloud."
-                    topics={["Docker/Kubernetes", "Serverless", "CI/CD", "Cloud Security"]}
-                    completedModules={completedModules.filter(id => id.startsWith('cloud-'))}
-                    onViewSyllabus={() => setSelectedSyllabus("Cloud Engineering")}
-                  />
-                </div>
-
-                <AnimatePresence>
-                  {selectedSyllabus && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                      <motion.div 
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
-                        className="bg-card border border-border w-full max-w-2xl max-h-[85vh] overflow-hidden rounded-3xl shadow-2xl flex flex-col"
-                      >
-                        <div className="p-6 border-b border-border flex items-center justify-between bg-secondary/30">
-                          <div className="flex items-center gap-3">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                            <h3 className="text-xl font-bold">{selectedSyllabus}</h3>
-                          </div>
-                          <button onClick={() => setSelectedSyllabus(null)} className="p-2 hover:bg-secondary rounded-full transition-colors">
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                        <div className="p-8 overflow-y-auto space-y-8">
-                          <SyllabusModule 
-                            id={`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m1`}
-                            title="Module 1: Foundations & Setup"
-                            content="In this module, you will learn the core fundamentals of the field. We cover the history, the current ecosystem, and how to set up your professional development environment. You'll build your first 'Hello World' project and understand the basic architecture that powers modern systems."
-                            points={[
-                              "Understanding the core architecture and design patterns",
-                              "Setting up a professional-grade development environment",
-                              "Mastering basic syntax and command-line tools",
-                              "Version control fundamentals with Git"
-                            ]}
-                            isCompleted={completedModules.includes(`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m1`)}
-                            onComplete={() => handleCompleteModule(`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m1`)}
-                          />
-                          <SyllabusModule 
-                            id={`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m2`}
-                            title="Module 2: Intermediate Concepts & APIs"
-                            content="Now that you have the basics down, we dive into more complex logic. You'll learn how to handle asynchronous operations, work with external data sources through REST and GraphQL APIs, and manage complex state within your applications. This module focuses on building functional, data-driven components."
-                            points={[
-                              "Asynchronous programming and error handling",
-                              "Integrating third-party services and APIs",
-                              "Advanced state management strategies",
-                              "Testing and debugging techniques"
-                            ]}
-                            isCompleted={completedModules.includes(`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m2`)}
-                            onComplete={() => handleCompleteModule(`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m2`)}
-                          />
-                          <SyllabusModule 
-                            id={`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m3`}
-                            title="Module 3: Advanced Projects & Deployment"
-                            content="The final phase is all about production-readiness. You will build a comprehensive capstone project that incorporates everything you've learned. We also cover performance optimization, security best practices, and how to deploy your work to the cloud for the world to see."
-                            points={[
-                              "Building a full-scale capstone project",
-                              "Performance optimization and lazy loading",
-                              "Security fundamentals and authentication",
-                              "CI/CD pipelines and cloud deployment"
-                            ]}
-                            isCompleted={completedModules.includes(`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m3`)}
-                            onComplete={() => handleCompleteModule(`${selectedSyllabus.toLowerCase().replace(/ /g, '-').substring(0, 8)}-m3`)}
-                          />
-                        </div>
-                        <div className="p-6 border-t border-border bg-secondary/10 flex justify-end">
-                          <button 
-                            onClick={() => setSelectedSyllabus(null)}
-                            className="px-8 py-3 bg-primary text-white rounded-2xl font-bold hover:scale-[1.02] transition-all"
-                          >
-                            Done
-                          </button>
-                        </div>
-                      </motion.div>
+                {certificates.length === 0 ? (
+                  <div className="p-20 text-center bg-card border border-border rounded-[40px] space-y-6">
+                    <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto">
+                      <Award className="w-10 h-10 text-muted-foreground" />
                     </div>
-                  )}
-                </AnimatePresence>
+                    <div className="max-w-sm mx-auto">
+                      <h3 className="text-xl font-bold mb-2">No Certificates Yet</h3>
+                      <p className="text-muted-foreground">Complete all modules in a study area to earn your first professional certificate.</p>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('study')}
+                      className="px-8 py-3 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-all"
+                    >
+                      Start Learning
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {certificates.map((cert) => (
+                        <div key={cert.id} className="bg-card border border-border p-8 rounded-[32px] shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
+                          <div className="flex items-center justify-between mb-6 relative z-10">
+                            <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                              <Award className="w-7 h-7" />
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full">Verified Achievement</span>
+                          </div>
+                          <div className="relative z-10">
+                            <h3 className="text-2xl font-black tracking-tight mb-2">{cert.module_name}</h3>
+                            <p className="text-sm text-muted-foreground mb-8">Issued on {new Date(cert.issued_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                            <div className="flex gap-3">
+                              <button 
+                                onClick={() => setSelectedCertificate(cert)}
+                                className="flex-1 py-4 bg-secondary text-foreground rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-accent transition-all"
+                              >
+                                <ExternalLink className="w-4 h-4" /> View Certificate
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  const url = window.location.origin;
+                                  const text = `I'm thrilled to share that I've just earned my professional certificate in ${cert.module_name} from EduAI! 🚀 Check it out: ${url} #EduAI #Learning #ProfessionalDevelopment #Chirag`;
+                                  window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
+                                }}
+                                className="flex-1 py-4 bg-primary text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-lg shadow-primary/20"
+                              >
+                                <Linkedin className="w-4 h-4" /> Share
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -507,6 +611,27 @@ export function Dashboard() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Certificate Preview Modal */}
+      <AnimatePresence>
+        {selectedCertificate && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-3xl"
+            >
+              <CertificateComponent 
+                userName={user?.fullName || 'Student'} 
+                moduleTitle={selectedCertificate.module_name} 
+                date={new Date(selectedCertificate.issued_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                onClose={() => setSelectedCertificate(null)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -543,15 +668,18 @@ function SidebarItem({ icon, label, active, onClick, collapsed }: {
 
 function StatsCard({ title, value, trend, icon, color }: { title: string; value: string; trend: string; icon: React.ReactNode; color: string }) {
   return (
-    <div className="p-8 rounded-3xl bg-card border border-border shadow-sm hover:shadow-xl transition-all group">
-      <div className="flex items-center justify-between mb-4">
-        <div className={cn("p-3 rounded-2xl bg-secondary transition-colors group-hover:bg-primary/10 group-hover:text-primary", color)}>
+    <div className="p-8 rounded-3xl bg-card border border-border shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
+      <div className="flex items-center justify-between mb-4 relative z-10">
+        <div className={cn("p-3 rounded-2xl bg-secondary transition-all group-hover:scale-110 group-hover:bg-primary group-hover:text-white", color)}>
           {icon}
         </div>
         <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">{trend}</span>
       </div>
-      <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-      <span className="text-4xl font-black tracking-tighter">{value}</span>
+      <div className="relative z-10">
+        <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+        <span className="text-4xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/50">{value}</span>
+      </div>
     </div>
   );
 }
@@ -567,50 +695,42 @@ function SuggestionButton({ children, onClick }: { children: React.ReactNode; on
   );
 }
 
-function StudyCard({ id, title, description, topics, completedModules, onViewSyllabus }: { 
+function StudyCard({ id, title, description, category, isCompleted }: { 
   id: string;
   title: string; 
   description: string; 
-  topics: string[]; 
-  completedModules: string[];
-  onViewSyllabus: () => void;
+  category: string;
+  isCompleted: boolean;
 }) {
-  const progress = Math.round((completedModules.length / 3) * 100);
-
   return (
-    <div className="p-8 rounded-3xl bg-card border border-border shadow-sm flex flex-col h-full group hover:border-primary/50 transition-all">
-      <div className="flex-1">
+    <div className={cn(
+      "p-8 rounded-[32px] bg-card border border-border shadow-sm flex flex-col h-full group hover:border-primary/50 transition-all relative overflow-hidden",
+      isCompleted && "border-emerald-500/30 bg-emerald-500/5"
+    )}>
+      <div className="flex-1 relative z-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{title}</h3>
-          <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg">{progress}%</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{category}</span>
+          {isCompleted && <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full">Completed ✓</span>}
         </div>
-        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{description}</p>
-        
-        <div className="w-full bg-secondary h-1.5 rounded-full mb-6 overflow-hidden">
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            className="h-full bg-primary"
-          />
-        </div>
-
-        <div className="space-y-3 mb-8">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70">Curriculum Highlights</p>
-          <div className="flex flex-wrap gap-2">
-            {topics.map((topic, i) => (
-              <span key={i} className="px-3 py-1 bg-secondary/50 border border-border rounded-full text-[11px] font-semibold">{topic}</span>
-            ))}
-          </div>
-        </div>
+        <h3 className="text-xl font-black tracking-tight mb-3 group-hover:text-primary transition-colors">{title}</h3>
+        <p className="text-sm text-muted-foreground mb-8 leading-relaxed line-clamp-2">{description}</p>
       </div>
-      <div className="flex flex-col gap-3">
-        <button 
-          onClick={onViewSyllabus}
-          className="w-full py-3 rounded-2xl font-bold bg-primary text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 transition-all text-sm"
+      
+      <div className="relative z-10">
+        <Link 
+          to={`/study-area/${id}`}
+          className={cn(
+            "w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all text-sm",
+            isCompleted 
+              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" 
+              : "bg-primary text-white hover:scale-[1.02] shadow-lg shadow-primary/20"
+          )}
         >
-          Open Study Material
-        </button>
+          {isCompleted ? "Review Material" : "Start Learning"} <ChevronRight className="w-4 h-4" />
+        </Link>
       </div>
+      
+      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-primary/10 transition-colors" />
     </div>
   );
 }
