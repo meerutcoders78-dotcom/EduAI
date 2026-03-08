@@ -13,30 +13,29 @@ interface CertificateProps {
 
 export function Certificate({ userName, moduleTitle, date, onClose }: CertificateProps) {
   const certificateRef = useRef<HTMLDivElement>(null);
+  const captureRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadImage = async () => {
-    if (!certificateRef.current || isDownloading) return;
+    if (!captureRef.current || isDownloading) return;
     
     setIsDownloading(true);
     try {
-      const element = certificateRef.current;
+      // Ensure the capture element is ready
+      const element = captureRef.current;
       
-      // Use dom-to-image-more for better modern CSS support
+      // Use dom-to-image-more with specific settings for clarity
       const dataUrl = await domtoimage.toPng(element, {
         quality: 1.0,
         bgcolor: '#ffffff',
         width: 1200,
         height: 848,
         style: {
-          transform: 'none',
-          margin: '0',
-          padding: '0',
-          borderRadius: '0',
-          boxShadow: 'none',
           display: 'flex',
           visibility: 'visible',
-          opacity: '1'
+          opacity: '1',
+          transform: 'none',
+          position: 'static'
         }
       });
 
@@ -48,21 +47,19 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
       document.body.removeChild(link);
     } catch (error) {
       console.error("Primary download error", error);
-      // Fallback to html2canvas if dom-to-image-more fails
+      // Fallback to html2canvas
       try {
-        const canvas = await html2canvas(certificateRef.current, {
-          scale: 3,
+        const canvas = await html2canvas(captureRef.current, {
+          scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
           logging: false,
-          onclone: (clonedDoc) => {
-            const el = clonedDoc.getElementById('certificate-capture');
-            if (el) el.style.display = 'flex';
-          }
+          width: 1200,
+          height: 848
         });
 
-        const dataUrl = canvas.toDataURL('image/png');
+        const dataUrl = canvas.toDataURL('image/png', 1.0);
         const link = document.createElement('a');
         link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
         link.href = dataUrl;
@@ -173,6 +170,56 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
         </div>
         
         <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Your certificate is securely stored in your dashboard.</p>
+      </div>
+
+      {/* Hidden high-resolution certificate for capture only */}
+      <div className="fixed -left-[9999px] top-0">
+        <div 
+          ref={captureRef}
+          style={{ width: '1200px', height: '848px' }}
+          className="bg-white text-slate-900 p-20 flex flex-col items-center justify-center space-y-10 relative overflow-hidden"
+        >
+          {/* Borders */}
+          <div className="absolute top-0 left-0 w-full h-6 bg-blue-700" />
+          <div className="absolute bottom-0 left-0 w-full h-6 bg-blue-700" />
+          
+          {/* Logo Section */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-blue-700 rounded-xl flex items-center justify-center">
+              <Box className="w-8 h-8 text-white" />
+            </div>
+            <span className="text-3xl font-black tracking-tighter text-slate-900">Abilities AI</span>
+          </div>
+
+          <div className="space-y-2 text-center">
+            <h3 className="text-5xl font-serif italic text-blue-800">Certificate of Excellence</h3>
+            <p className="text-xs uppercase tracking-[0.5em] font-black text-slate-400">This professional credential is awarded to</p>
+          </div>
+
+          <p className="text-6xl font-black tracking-tight text-slate-900 border-b-2 border-slate-100 pb-4 min-w-[400px] text-center">{userName}</p>
+          
+          <div className="space-y-2 text-center max-w-[80%]">
+            <p className="text-lg text-slate-500 font-medium">for successfully completing the production-ready curriculum and mastering</p>
+            <p className="text-4xl font-black text-blue-700 tracking-tight">{moduleTitle}</p>
+          </div>
+
+          <div className="pt-12 flex items-center gap-24">
+            <div className="text-center">
+              <div className="w-48 h-0.5 bg-slate-200 mb-4" />
+              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Date Issued</p>
+              <p className="text-lg font-bold text-slate-700">{date}</p>
+            </div>
+            <div className="text-center">
+              <div className="w-48 h-0.5 bg-slate-200 mb-4" />
+              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Founder & Lead</p>
+              <p className="text-lg font-bold text-slate-700 font-serif italic">Chirag Tankan</p>
+            </div>
+          </div>
+          
+          <div className="absolute bottom-10 right-10 opacity-10">
+            <Award className="w-32 h-32 text-blue-800" />
+          </div>
+        </div>
       </div>
     </div>
   );
