@@ -13,8 +13,25 @@ interface CertificateProps {
 
 export function Certificate({ userName, moduleTitle, date, onClose }: CertificateProps) {
   const certificateRef = useRef<HTMLDivElement>(null);
-  const captureRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const [certScale, setCertScale] = useState(0.5);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Update scale based on container width
+  React.useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const newScale = Math.min(containerWidth / 1200, 1);
+        setCertScale(newScale);
+      }
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   const handleDownloadImage = async () => {
     if (!certificateRef.current || isDownloading) return;
@@ -23,15 +40,17 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
     try {
       const element = certificateRef.current;
       
-      // Use dom-to-image-more which handles modern CSS better than html2canvas
-      // We use a high-quality PNG export
+      // Use dom-to-image-more for high-quality SVG-based capture
+      // We force the scale to 1 for the capture
       const dataUrl = await domtoimage.toPng(element, {
         quality: 1.0,
         width: 1200,
         height: 848,
         style: {
           transform: 'scale(1)',
-          transformOrigin: 'top left'
+          transformOrigin: 'top left',
+          margin: '0',
+          padding: '0'
         }
       });
 
@@ -49,105 +68,161 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
     }
   };
 
+  const displayName = userName || "<First Last>";
+
   return (
-    <div className="bg-card border border-border w-full max-w-3xl rounded-[32px] sm:rounded-[48px] overflow-hidden shadow-2xl relative mx-4 sm:mx-0">
+    <div className="bg-card border border-border w-full max-w-5xl rounded-[32px] overflow-hidden shadow-2xl relative mx-4 sm:mx-0">
       {onClose && (
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 sm:p-3 hover:bg-secondary rounded-full transition-colors z-50"
+          className="absolute top-4 right-4 p-2 hover:bg-secondary rounded-full transition-colors z-50"
         >
           <X className="w-5 h-5 sm:w-6 h-6" />
         </button>
       )}
       
-      <div className="p-6 sm:p-10 text-center space-y-6 sm:space-y-8">
-        <motion.div 
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', damping: 12 }}
-          className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-700 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4 shadow-2xl shadow-blue-700/40"
-        >
-          <Award className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-        </motion.div>
-        
-        <div className="space-y-1 sm:space-y-2">
-          <h2 className="text-2xl sm:text-4xl font-black tracking-tighter text-primary">Congratulations!</h2>
-          <p className="text-sm sm:text-lg text-muted-foreground font-medium">You've officially mastered {moduleTitle}</p>
+      <div className="p-4 sm:p-8 text-center space-y-6">
+        <div className="space-y-1">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tighter text-primary">Congratulations!</h2>
+          <p className="text-sm sm:text-base text-muted-foreground font-medium">You've officially mastered {moduleTitle}</p>
         </div>
         
-        <div className="p-0.5 sm:p-1 border-2 border-blue-500/20 rounded-[24px] sm:rounded-[40px] bg-gradient-to-br from-blue-500/5 to-purple-500/5 overflow-hidden">
+        {/* Certificate Preview Container */}
+        <div ref={containerRef} className="relative border-4 border-blue-500/10 rounded-[24px] overflow-hidden bg-[#0b1622] w-full">
           <div 
             ref={certificateRef}
-            id="certificate-capture"
-            className="aspect-[1.414/1] bg-gradient-to-br from-[#1e3a8a] via-[#3b0764] to-[#1e3a8a] text-white p-4 sm:p-10 flex flex-col items-center justify-center space-y-3 sm:space-y-6 shadow-2xl relative overflow-hidden rounded-[22px] sm:rounded-[38px]"
+            className="relative bg-[#0b1622] overflow-hidden select-none"
+            style={{ 
+              width: '1200px', 
+              height: '848px', 
+              transform: `scale(${certScale})`, 
+              transformOrigin: 'top left',
+              marginBottom: `-${848 * (1 - certScale)}px`
+            }}
           >
-            {/* Certificate Content - Royal Design */}
-            <div className="absolute top-0 left-0 w-full h-1.5 sm:h-3 bg-gradient-to-r from-blue-400 via-blue-200 to-purple-400 opacity-80" />
-            <div className="absolute bottom-0 left-0 w-full h-1.5 sm:h-3 bg-gradient-to-r from-blue-400 via-blue-200 to-purple-400 opacity-80" />
-            
-            {/* Decorative Ornaments */}
-            <div className="absolute top-4 left-4 sm:top-8 sm:left-8 w-8 h-8 sm:w-16 sm:h-16 border-t-2 border-l-2 border-blue-300/30 rounded-tl-2xl" />
-            <div className="absolute top-4 right-4 sm:top-8 sm:right-8 w-8 h-8 sm:w-16 sm:h-16 border-t-2 border-r-2 border-blue-300/30 rounded-tr-2xl" />
-            <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 w-8 h-8 sm:w-16 sm:h-16 border-b-2 border-l-2 border-blue-300/30 rounded-bl-2xl" />
-            <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 w-8 h-8 sm:w-16 sm:h-16 border-b-2 border-r-2 border-blue-300/30 rounded-br-2xl" />
+            {/* ================= CORNER BORDERS ================= */}
+            <div className="absolute top-8 left-8 w-24 h-24 border-l-4 border-t-4 border-[#00d4ff]/80 rounded-tl-2xl" />
+            <div className="absolute top-8 right-8 w-24 h-24 border-r-4 border-t-4 border-[#00d4ff]/80 rounded-tr-2xl" />
+            <div className="absolute bottom-8 left-8 w-24 h-24 border-l-4 border-b-4 border-[#00d4ff]/80 rounded-bl-2xl" />
+            <div className="absolute bottom-8 right-8 w-24 h-24 border-r-4 border-b-4 border-[#00d4ff]/80 rounded-br-2xl" />
 
-            <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-              <div className="w-6 h-6 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg flex items-center justify-center">
-                <Box className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+            {/* ================= TOP LOGO ================= */}
+            <div className="absolute top-12 left-0 right-0 flex justify-center items-center gap-3 z-20">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center">
+                <Box className="w-8 h-8 text-[#00d4ff]" />
               </div>
-              <span className="text-sm sm:text-2xl font-black tracking-tighter text-white">Abilities AI</span>
+              <span className="text-3xl font-black tracking-tighter text-white">Abilities AI</span>
             </div>
 
-            <div className="space-y-0.5 sm:space-y-2 text-center">
-              <h3 className="text-xl sm:text-4xl font-serif italic text-blue-100">Certificate of Excellence</h3>
-              <p className="text-[5px] sm:text-[10px] uppercase tracking-[0.3em] sm:tracking-[0.5em] font-black text-blue-200/60">This professional credential is awarded to</p>
-            </div>
-
-            <p className="text-2xl sm:text-5xl font-black tracking-tight text-white border-b border-white/20 pb-1 sm:pb-3 min-w-[180px] sm:min-w-[350px] text-center">{userName}</p>
-            
-            <div className="space-y-0.5 sm:space-y-2 text-center max-w-[90%]">
-              <p className="text-[6px] sm:text-sm text-blue-100/70 font-medium">for successfully completing the production-ready curriculum and mastering</p>
-              <p className="text-sm sm:text-3xl font-black text-white tracking-tight">{moduleTitle}</p>
-            </div>
-
-            <div className="pt-4 sm:pt-10 flex items-center gap-8 sm:gap-20">
-              <div className="text-center">
-                <div className="w-20 sm:w-40 h-px bg-white/20 mb-1 sm:mb-3" />
-                <p className="text-[5px] sm:text-[10px] font-bold uppercase text-blue-200/40 tracking-widest">Date Issued</p>
-                <p className="text-[8px] sm:text-sm font-bold text-white">{date}</p>
+            {/* ================= MAIN CONTENT ================= */}
+            <div className="relative z-10 h-full flex flex-col justify-center items-center text-center pt-16">
+              {/* Heading */}
+              <div className="mb-10">
+                <h1 className="text-[#00d4ff] text-7xl font-extrabold tracking-tight">
+                  CERTIFICATE
+                </h1>
+                <p className="text-white/60 tracking-[0.4em] uppercase mt-3 text-xl font-bold">
+                  Of Excellence
+                </p>
               </div>
-              <div className="text-center">
-                <div className="w-20 sm:w-40 h-px bg-white/20 mb-1 sm:mb-3" />
-                <p className="text-[5px] sm:text-[10px] font-bold uppercase text-blue-200/40 tracking-widest">Founder & Lead</p>
-                <p className="text-[8px] sm:text-sm font-bold text-white font-serif italic">Chirag Tankan</p>
+
+              <p className="text-white/80 text-2xl mb-8">
+                This professional credential is proudly presented to
+              </p>
+
+              {/* Name */}
+              <h2 className="text-[#c7ff4d] text-6xl font-black italic tracking-wide uppercase mb-10 border-b-2 border-[#c7ff4d]/20 pb-4 min-w-[500px]">
+                {displayName}
+              </h2>
+
+              {/* Description */}
+              <div className="max-w-4xl space-y-4">
+                <p className="text-white/70 text-xl leading-relaxed">
+                  for successfully completing the production-ready curriculum and mastering
+                </p>
+                <p className="text-[#00d4ff] text-4xl font-black tracking-tight uppercase">
+                  {moduleTitle}
+                </p>
+              </div>
+
+              {/* ================= SPONSOR ================= */}
+              <div className="mt-12 flex flex-col items-center gap-4">
+                <p className="text-white/40 text-sm tracking-[0.3em] uppercase font-bold">
+                  Sponsored By
+                </p>
+                <div className="flex items-center gap-4">
+                  <img
+                    src="https://json.commudle.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBLy9YQkE9PSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--0f09813e6aa3dc3e732cca755614d3bbadd5bf5f/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDRG9MWm05eWJXRjBTU0lJY0c1bkJqb0dSVlE2RkhKbGMybDZaVjkwYjE5c2FXMXBkRnNIYVFKQUFXa0NRQUU2QzJ4dllXUmxjbnNHT2dsd1lXZGxNQT09IiwiZXhwIjpudWxsLCJwdXIiOiJ2YXJpYXRpb24ifX0=--e1b8c3103b542b9d7ba47b2862e0d51860fbef22/Screenshot%202025-08-15%20114940.png"
+                    alt="Meerut Coders Logo"
+                    className="h-16 object-contain opacity-90"
+                    crossOrigin="anonymous"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="h-12 w-px bg-white/20 mx-2" />
+                  <p className="text-[#00d4ff] text-2xl font-black tracking-tighter">
+                    Meerut Coders
+                  </p>
+                </div>
+              </div>
+
+              {/* ================= FOOTER ================= */}
+              <div className="absolute bottom-16 left-16 right-16 flex justify-between items-end">
+                {/* Date */}
+                <div className="text-left">
+                  <div className="w-56 h-[1px] bg-[#00d4ff]/40 mb-3" />
+                  <p className="text-white/40 text-xs tracking-widest uppercase font-bold mb-1">
+                    Date Issued
+                  </p>
+                  <p className="text-white text-lg font-bold">
+                    {date}
+                  </p>
+                </div>
+
+                {/* Signature */}
+                <div className="text-right">
+                  <p
+                    className="text-[#c7ff4d] text-4xl leading-none mb-2"
+                    style={{ fontFamily: "'Brush Script MT', 'Pacifico', cursive" }}
+                  >
+                    Chirag Tankan
+                  </p>
+                  <div className="w-56 h-[1px] bg-[#00d4ff]/40 mb-3 ml-auto" />
+                  <p className="text-[#00d4ff] font-black text-lg tracking-tighter">
+                    Chirag Tankan
+                  </p>
+                  <p className="text-white/40 text-xs tracking-widest uppercase font-bold">
+                    Founder & Lead
+                  </p>
+                </div>
               </div>
             </div>
             
-            <div className="absolute bottom-4 right-4 sm:bottom-10 sm:right-10 opacity-10">
-              <Award className="w-16 h-16 sm:w-32 sm:h-32 text-white" />
+            {/* Watermark */}
+            <div className="absolute bottom-16 right-1/2 translate-x-1/2 opacity-5 pointer-events-none">
+              <Award className="w-96 h-96 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <button 
             onClick={handleDownloadImage}
             disabled={isDownloading}
-            className="w-full sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-primary text-white rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-12 py-4 bg-primary text-white rounded-2xl font-bold text-base flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isDownloading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Generating...
+                <Loader2 className="w-5 h-5 animate-spin" /> Generating...
               </>
             ) : (
               <>
-                <Download className="w-4 h-4" /> Download Certificate
+                <Download className="w-5 h-5" /> Download Certificate
               </>
             )}
           </button>
         </div>
         
-        <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Your certificate is securely stored in your dashboard.</p>
+        <p className="text-xs text-muted-foreground font-medium">Your certificate is high-resolution and ready for printing or sharing.</p>
       </div>
     </div>
   );
