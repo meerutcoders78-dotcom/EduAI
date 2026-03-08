@@ -25,6 +25,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { cn } from '../lib/utils';
 import { MODULES } from '../constants/modules';
 import { Certificate } from './Certificate';
+import { storageService } from '../services/storageService';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -144,11 +145,10 @@ export function ModulePage() {
       }
     };
 
-    const fetchProgress = async () => {
+    const fetchProgress = () => {
       if (!user) return;
       try {
-        const res = await fetch(`/api/progress/${user.id}`);
-        const data = await res.json();
+        const data = storageService.getProgress(user.id);
         setCompletedModules(data);
       } catch (err) {
         console.error("Failed to fetch progress", err);
@@ -188,12 +188,7 @@ export function ModulePage() {
     setIsMarking(true);
     
     try {
-      await fetch('/api/progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, moduleId: moduleId })
-      });
-      
+      storageService.saveProgress(user.id, moduleId);
       setCompletedModules(prev => [...prev, moduleId]);
       handleIssueCertificate();
     } catch (error) {
@@ -207,13 +202,9 @@ export function ModulePage() {
     if (!user) return;
     
     try {
-      const res = await fetch('/api/certificates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, moduleName: moduleInfo.title })
-      });
+      const result = storageService.issueCertificate(user.id, moduleInfo.title);
 
-      if (res.ok) {
+      if (result.success) {
         confetti({
           particleCount: 150,
           spread: 70,
@@ -222,8 +213,7 @@ export function ModulePage() {
         });
         setShowCertificateModal(true);
       } else {
-        const data = await res.json();
-        setError(data.error || "Failed to issue certificate.");
+        setError("Failed to issue certificate.");
         // Show error briefly
         setTimeout(() => setError(null), 5000);
       }

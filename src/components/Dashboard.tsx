@@ -26,6 +26,7 @@ import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
 import { MODULES, ModuleInfo } from '../constants/modules';
 import { Certificate as CertificateComponent } from './Certificate';
+import { storageService } from '../services/storageService';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -115,15 +116,12 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = () => {
       if (!user) return;
       try {
-        const [progressRes, certsRes] = await Promise.all([
-          fetch(`/api/progress/${user.id}`),
-          fetch(`/api/certificates/${user.id}`)
-        ]);
-        const progressData = await progressRes.json();
-        const certsData = await certsRes.json();
+        const progressData = storageService.getProgress(user.id);
+        const certsData = storageService.getCertificates(user.id);
+        
         setCompletedModules(progressData);
         setCertificates(certsData);
         
