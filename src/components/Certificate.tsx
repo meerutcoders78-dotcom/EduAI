@@ -44,7 +44,7 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
       const canvas = await html2canvas(element, {
         scale: 2, // High resolution
         useCORS: true,
-        backgroundColor: '#ffffff',
+        backgroundColor: null, // Respect element background
         logging: false,
         width: 1200,
         height: 848,
@@ -53,6 +53,8 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
           if (clonedElement) {
             clonedElement.style.transform = 'none';
             clonedElement.style.margin = '0';
+            clonedElement.style.border = 'none'; // Ensure no border on the captured element
+            clonedElement.style.borderRadius = '0'; // Often better for clean edges in downloads
           }
           // Remove any potential debug borders that might be showing up from global styles
           const allElements = clonedDoc.querySelectorAll('*');
@@ -104,11 +106,11 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
         </div>
         
         {/* Certificate Preview Container */}
-        <div ref={containerRef} className="relative border-4 border-primary/10 rounded-[24px] overflow-hidden bg-slate-50 w-full">
+        <div ref={containerRef} className="relative border-4 border-blue-500/10 rounded-[24px] overflow-hidden bg-[#0b1622] w-full">
           <div 
             ref={certificateRef}
             data-cert-container
-            className="relative bg-white overflow-hidden select-none"
+            className="relative bg-[#0b1622] overflow-hidden select-none"
             style={{ 
               width: '1200px', 
               height: '848px', 
@@ -117,96 +119,82 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
               marginBottom: `-${848 * (1 - certScale)}px`
             }}
           >
-            {/* ================= DECORATIVE BORDER ================= */}
-            <div className="absolute inset-8 border-8 border-double border-primary/20 rounded-lg" />
-            <div className="absolute inset-12 border border-primary/10 rounded-sm" />
+            {/* ================= ROYAL BLUE & PURPLE GRADIENT ================= */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0b1622] via-[#1e1b4b] to-[#2e1065] pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,212,255,0.08),transparent_70%)] pointer-events-none" />
 
-            {/* ================= CORNER ACCENTS ================= */}
-            <div className="absolute top-0 left-0 w-48 h-48 bg-primary/5 rounded-br-full -translate-x-1/2 -translate-y-1/2" />
-            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-bl-full translate-x-1/2 -translate-y-1/2" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-tr-full -translate-x-1/2 translate-y-1/2" />
-            <div className="absolute bottom-0 right-0 w-48 h-48 bg-primary/5 rounded-tl-full translate-x-1/2 translate-y-1/2" />
+            {/* ================= CORNER BORDERS ================= */}
+            <div className="absolute top-8 left-8 w-24 h-24 border-l-4 border-t-4 border-[#00d4ff]/80 rounded-tl-2xl" />
+            <div className="absolute top-8 right-8 w-24 h-24 border-r-4 border-t-4 border-[#00d4ff]/80 rounded-tr-2xl" />
+            <div className="absolute bottom-8 left-8 w-24 h-24 border-l-4 border-b-4 border-[#00d4ff]/80 rounded-bl-2xl" />
+            <div className="absolute bottom-8 right-8 w-24 h-24 border-r-4 border-b-4 border-[#00d4ff]/80 rounded-br-2xl" />
 
             {/* ================= TOP LOGO ================= */}
-            <div className="absolute top-20 left-0 right-0 flex flex-col items-center gap-2 z-20">
-              <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-                <Award className="w-10 h-10 text-white" />
+            <div className="absolute top-12 left-0 right-0 flex justify-center items-center gap-3 z-20">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center">
+                <Box className="w-8 h-8 text-[#00d4ff]" />
               </div>
-              <span className="text-2xl font-black tracking-tighter text-slate-900 uppercase">Abilities AI</span>
+              <span className="text-3xl font-black tracking-tighter text-white">Abilities AI</span>
             </div>
 
             {/* ================= MAIN CONTENT ================= */}
-            <div className="relative z-10 h-full flex flex-col justify-center items-center text-center pt-24 px-24">
+            <div className="relative z-10 h-full flex flex-col justify-center items-center text-center pt-16">
               {/* Heading */}
-              <div className="mb-12">
-                <h1 className="text-slate-900 text-6xl font-black tracking-tight mb-2">
+              <div className="mb-10">
+                <h1 className="text-[#00d4ff] text-7xl font-extrabold tracking-tight">
                   CERTIFICATE
                 </h1>
-                <div className="flex items-center gap-4">
-                  <div className="h-px w-12 bg-primary/30" />
-                  <p className="text-primary font-bold tracking-[0.3em] uppercase text-lg">
-                    OF COMPLETION
-                  </p>
-                  <div className="h-px w-12 bg-primary/30" />
-                </div>
+                <p className="text-white/60 tracking-[0.4em] uppercase mt-3 text-xl font-bold">
+                  Of Excellence
+                </p>
               </div>
 
-              <p className="text-slate-500 text-xl font-medium mb-8 italic">
-                This is to certify that
+              <p className="text-white/80 text-2xl mb-8">
+                This professional credential is proudly presented to
               </p>
 
               {/* Name */}
-              <h2 className="text-slate-900 text-6xl font-black tracking-tight mb-8 border-b-4 border-primary/10 pb-4 min-w-[600px]">
+              <h2 className="text-[#c7ff4d] text-6xl font-black italic tracking-wide uppercase mb-10 border-b-2 border-[#c7ff4d]/20 pb-4 min-w-[500px]">
                 {displayName}
               </h2>
 
               {/* Description */}
-              <div className="max-w-3xl space-y-4 mb-12">
-                <p className="text-slate-500 text-xl leading-relaxed">
-                  has successfully completed all requirements for the professional course in
+              <div className="max-w-4xl space-y-4">
+                <p className="text-white/70 text-xl leading-relaxed">
+                  for successfully completing the production-ready curriculum and mastering
                 </p>
-                <p className="text-primary text-4xl font-black tracking-tight">
+                <p className="text-[#00d4ff] text-4xl font-black tracking-tight uppercase">
                   {moduleTitle}
                 </p>
               </div>
 
               {/* ================= FOOTER ================= */}
-              <div className="w-full flex justify-between items-end mt-auto pb-20 px-16">
+              <div className="absolute bottom-16 left-16 right-16 flex justify-between items-end">
                 {/* Date */}
                 <div className="text-left">
-                  <p className="text-slate-900 text-xl font-bold border-b-2 border-slate-200 pb-1 mb-2">
+                  <div className="w-56 h-[1px] bg-[#00d4ff]/40 mb-3" />
+                  <p className="text-white/40 text-xs tracking-widest uppercase font-bold mb-1">
+                    Date Issued
+                  </p>
+                  <p className="text-white text-lg font-bold">
                     {date}
                   </p>
-                  <p className="text-slate-400 text-xs tracking-widest uppercase font-bold">
-                    Date of Issue
-                  </p>
-                </div>
-
-                {/* Badge */}
-                <div className="relative">
-                  <div className="w-32 h-32 rounded-full border-4 border-primary/20 flex items-center justify-center">
-                    <div className="w-24 h-24 rounded-full bg-primary/5 flex items-center justify-center">
-                      <Box className="w-12 h-12 text-primary/40" />
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap uppercase tracking-tighter">
-                    Verified Credential
-                  </div>
                 </div>
 
                 {/* Signature */}
                 <div className="text-right">
                   <p
-                    className="text-primary text-4xl leading-none mb-2"
-                    style={{ fontFamily: "'Pacifico', cursive" }}
+                    className="text-[#c7ff4d] text-4xl leading-none mb-2"
+                    style={{ fontFamily: "'Brush Script MT', 'Pacifico', cursive" }}
                   >
                     Abilities AI
                   </p>
-                  <p className="text-slate-900 text-xl font-bold border-t-2 border-slate-200 pt-1 mt-2">
+                  <div className="w-56 h-[1px] bg-[#00d4ff]/40 mb-3 ml-auto" />
+                  <p className="text-[#00d4ff] font-black text-lg tracking-tighter">
                     Certification Board
                   </p>
-                  <p className="text-slate-400 text-xs tracking-widest uppercase font-bold">
-                    Official Authority
+                  <p className="text-white/40 text-xs tracking-widest uppercase font-bold">
+                    Abilities AI Official
                   </p>
                 </div>
               </div>
