@@ -82,6 +82,43 @@ async function startServer() {
     }
   });
 
+  // ASI One AI Proxy Route
+  app.post("/api/ai", async (req, res) => {
+    const { prompt, isJson } = req.body;
+    const apiKey = process.env.ASI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: "ASI One API Key is missing on the server." });
+    }
+
+    try {
+      const response = await fetch("https://api.asi1.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "asi-1",
+          messages: [{ role: "user", content: prompt }],
+          response_format: isJson ? { type: "json_object" } : undefined,
+          temperature: 0.7
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return res.status(response.status).json({ error: "ASI One API Error", details: errorData });
+      }
+
+      const data = await response.json();
+      res.json({ content: data.choices[0].message.content });
+    } catch (error: any) {
+      console.error("AI Proxy Error:", error);
+      res.status(500).json({ error: "Internal Server Error", message: error.message });
+    }
+  });
+
   // API 404 handler - must be before Vite/Static middleware
   app.all("/api/:path*", (req, res) => {
     res.status(404).json({ error: "API route not found" });

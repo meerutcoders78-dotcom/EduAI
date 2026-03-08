@@ -1,17 +1,6 @@
 const CACHE_PREFIX = "abilities_ai_cache_";
 const CACHE_EXPIRY = 10 * 60 * 60 * 1000; // 10 hours in milliseconds
 
-const getApiKey = () => {
-  const apiKey = process.env.ASI_API_KEY;
-  if (!apiKey) {
-    // During transition, we'll return a placeholder to avoid crashing
-    return "PENDING_ASI_KEY";
-  }
-  return apiKey;
-};
-
-const ASI_ENDPOINT = "https://api.asi1.ai/v1/chat/completions"; // Placeholder for ASI One endpoint
-
 const getFromCache = (key: string) => {
   const cached = localStorage.getItem(CACHE_PREFIX + key);
   if (!cached) return null;
@@ -53,32 +42,21 @@ const callWithRetry = async (fn: () => Promise<any>, retries = 3, delay = 2000) 
 };
 
 const callASI = async (prompt: string, isJson = false) => {
-  const apiKey = getApiKey();
-  if (apiKey === "PENDING_ASI_KEY") {
-    throw new Error("ASI One API Key is required. Please provide it in the environment variables.");
-  }
-
-  const response = await fetch(ASI_ENDPOINT, {
+  const response = await fetch("/api/ai", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
     },
-    body: JSON.stringify({
-      model: "asi-1", // Placeholder model name
-      messages: [{ role: "user", content: prompt }],
-      response_format: isJson ? { type: "json_object" } : undefined,
-      temperature: 0.7
-    })
+    body: JSON.stringify({ prompt, isJson })
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(`ASI One API Error: ${response.status} ${JSON.stringify(errorData)}`);
+    throw new Error(errorData.error || `AI Proxy Error: ${response.status}`);
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+  return data.content;
 };
 
 export const generateSkillRoadmap = async (skill: string) => {
