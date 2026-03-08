@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion } from 'motion/react';
-import { Award, Download, Linkedin, Sparkles as SparklesIcon, X } from 'lucide-react';
+import { Award, Download, Box, X } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 interface CertificateProps {
@@ -15,25 +15,34 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
 
   const handleDownloadImage = async () => {
     if (!certificateRef.current) return;
+    
     try {
+      // Create a temporary container to ensure the certificate is rendered correctly for capture
+      // This helps with issues where the modal styles might interfere
       const canvas = await html2canvas(certificateRef.current, {
-        scale: 3, // Higher scale for better quality
+        scale: 3,
         useCORS: true,
-        backgroundColor: '#ffffff'
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Ensure the cloned element is visible
+          const el = clonedDoc.getElementById('certificate-capture');
+          if (el) el.style.display = 'flex';
+        }
       });
+
+      const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.jpg`;
-      link.href = canvas.toDataURL('image/jpeg', 0.9); // Download as JPG with 90% quality
+      link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error("Download error", error);
+      alert("Unable to download certificate. Please try again or take a screenshot.");
     }
-  };
-
-  const handleShareLinkedIn = () => {
-    const url = window.location.origin;
-    const text = `I'm thrilled to share that I've just earned my professional certificate in ${moduleTitle} from Abilities AI! 🚀 This production-ready curriculum has been an incredible journey. Check it out: ${url} #AbilitiesAI #Learning #ProfessionalDevelopment #ChiragTankan`;
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (
@@ -65,6 +74,7 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
         <div className="p-0.5 sm:p-1 border-2 border-blue-500/20 rounded-[24px] sm:rounded-[40px] bg-gradient-to-br from-blue-500/5 to-purple-500/5 overflow-hidden">
           <div 
             ref={certificateRef}
+            id="certificate-capture"
             className="aspect-[1.414/1] bg-white text-slate-900 p-4 sm:p-10 flex flex-col items-center justify-center space-y-3 sm:space-y-6 shadow-2xl relative overflow-hidden rounded-[22px] sm:rounded-[38px]"
           >
             {/* Certificate Content - Professional Design */}
@@ -75,7 +85,7 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
             
             <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
               <div className="w-5 h-5 sm:w-8 sm:h-8 bg-blue-700 rounded-md sm:rounded-lg flex items-center justify-center">
-                <SparklesIcon className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
+                <Box className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
               </div>
               <span className="text-sm sm:text-xl font-black tracking-tighter text-slate-900">Abilities AI</span>
             </div>
@@ -112,20 +122,12 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2">
-          <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
-            <button 
-              onClick={handleDownloadImage}
-              className="flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-4 bg-secondary text-foreground rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-3 hover:bg-accent transition-all"
-            >
-              <Download className="w-4 h-4" /> Download
-            </button>
-            <button 
-              onClick={handleShareLinkedIn}
-              className="flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20"
-            >
-              <Linkedin className="w-4 h-4" /> Share
-            </button>
-          </div>
+          <button 
+            onClick={handleDownloadImage}
+            className="w-full sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-primary text-white rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
+          >
+            <Download className="w-4 h-4" /> Download Certificate
+          </button>
         </div>
         
         <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Your certificate is securely stored in your dashboard.</p>

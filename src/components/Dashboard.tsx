@@ -183,13 +183,14 @@ export function Dashboard() {
           "bg-card border-r border-border transition-all duration-300 flex flex-col z-[70] fixed lg:relative h-full",
           isSidebarOpen ? "w-72" : "w-20",
           "lg:translate-x-0",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          isMobileMenuOpen ? "translate-x-0 w-20" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        <div className="p-6 flex items-center justify-between">
-          {(isSidebarOpen || isMobileMenuOpen) && (
-            <span className="text-2xl font-black tracking-tighter gradient-text animate-gradient flex items-center gap-2">
-              <Box className="w-6 h-6 text-primary" /> Abilities AI
+        <div className="p-6 flex items-center justify-center lg:justify-between">
+          {(isSidebarOpen || isMobileMenuOpen || !isSidebarOpen) && (
+            <span className={cn("text-2xl font-black tracking-tighter gradient-text animate-gradient flex items-center gap-2")}>
+              <Box className="w-6 h-6 text-primary" /> 
+              {(isSidebarOpen || isMobileMenuOpen) && <span className="hidden lg:inline">Abilities AI</span>}
             </span>
           )}
           <button 
@@ -200,7 +201,7 @@ export function Dashboard() {
           </button>
           <button 
             onClick={() => setIsMobileMenuOpen(false)}
-            className="p-2 hover:bg-secondary rounded-xl transition-colors lg:hidden"
+            className="p-2 hover:bg-secondary rounded-xl transition-colors lg:hidden absolute right-4"
           >
             <X className="w-5 h-5" />
           </button>
@@ -212,43 +213,43 @@ export function Dashboard() {
             label="Overview" 
             active={activeTab === 'overview'} 
             onClick={() => { setActiveTab('overview'); setIsMobileMenuOpen(false); }}
-            collapsed={!isSidebarOpen && !isMobileMenuOpen}
+            collapsed={!isSidebarOpen}
           />
           <SidebarItem 
             icon={<MessageSquare />} 
             label="AI Study Tutor" 
             active={activeTab === 'tutor'} 
             onClick={() => { setActiveTab('tutor'); setIsMobileMenuOpen(false); }}
-            collapsed={!isSidebarOpen && !isMobileMenuOpen}
+            collapsed={!isSidebarOpen}
           />
           <SidebarItem 
             icon={<BookOpen />} 
             label="Study Area" 
             active={activeTab === 'study'} 
             onClick={() => { setActiveTab('study'); setIsMobileMenuOpen(false); }}
-            collapsed={!isSidebarOpen && !isMobileMenuOpen}
+            collapsed={!isSidebarOpen}
           />
           <SidebarItem 
             icon={<TrendingUp />} 
             label="Market Insights" 
             active={activeTab === 'market'} 
             onClick={() => { setActiveTab('market'); setIsMobileMenuOpen(false); }}
-            collapsed={!isSidebarOpen && !isMobileMenuOpen}
+            collapsed={!isSidebarOpen}
           />
           <SidebarItem 
             icon={<Award />} 
             label="My Certificates" 
             active={activeTab === 'certificates'} 
             onClick={() => { setActiveTab('certificates'); setIsMobileMenuOpen(false); }}
-            collapsed={!isSidebarOpen && !isMobileMenuOpen}
+            collapsed={!isSidebarOpen}
           />
         </nav>
 
         <div className="p-4 border-t border-border bg-secondary/20">
-          <div className={cn("flex items-center gap-3 p-2 rounded-2xl", (!isSidebarOpen && !isMobileMenuOpen) && "justify-center")}>
+          <div className={cn("flex items-center gap-3 p-2 rounded-2xl", !isSidebarOpen && "justify-center")}>
             <UserButton afterSignOutUrl="/" />
-            {(isSidebarOpen || isMobileMenuOpen) && (
-              <div className="flex flex-col min-w-0">
+            {isSidebarOpen && (
+              <div className="flex flex-col min-w-0 hidden lg:flex">
                 <span className="text-sm font-bold truncate">{user?.fullName || 'Student'}</span>
                 <span className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</span>
               </div>
@@ -621,19 +622,9 @@ export function Dashboard() {
                             <div className="flex flex-col sm:flex-row gap-3">
                               <button 
                                 onClick={() => setSelectedCertificate(cert)}
-                                className="flex-1 py-3 lg:py-4 bg-secondary text-foreground rounded-xl lg:rounded-2xl font-bold text-[10px] lg:text-xs flex items-center justify-center gap-2 hover:bg-accent transition-all"
-                              >
-                                <ExternalLink className="w-4 h-4" /> View Certificate
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  const url = window.location.origin;
-                                  const text = `I'm thrilled to share that I've just earned my professional certificate in ${cert.module_name} from Abilities AI! 🚀 Check it out: ${url} #AbilitiesAI #Learning #ProfessionalDevelopment #ChiragTankan`;
-                                  window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
-                                }}
                                 className="flex-1 py-3 lg:py-4 bg-primary text-white rounded-xl lg:rounded-2xl font-bold text-[10px] lg:text-xs flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-lg shadow-primary/20"
                               >
-                                <Linkedin className="w-4 h-4" /> Share
+                                <ExternalLink className="w-4 h-4" /> View Certificate
                               </button>
                             </div>
                           </div>
