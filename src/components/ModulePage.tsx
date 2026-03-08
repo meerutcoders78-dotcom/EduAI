@@ -25,7 +25,7 @@ import { cn } from '../lib/utils';
 import { MODULES } from '../constants/modules';
 import { Certificate } from './Certificate';
 import { storageService } from '../services/storageService';
-import { generateModuleContent } from '../services/geminiService';
+import { generateModuleContent } from '../services/aiService';
 
 interface ModulePageContent {
   pages: {

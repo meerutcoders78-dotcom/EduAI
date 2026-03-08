@@ -1,15 +1,16 @@
-import { GoogleGenAI, Type } from "@google/genai";
-
 const CACHE_PREFIX = "abilities_ai_cache_";
 const CACHE_EXPIRY = 10 * 60 * 60 * 1000; // 10 hours in milliseconds
 
-const getAI = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
+const getApiKey = () => {
+  const apiKey = process.env.ASI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set");
+    // During transition, we'll return a placeholder to avoid crashing
+    return "PENDING_ASI_KEY";
   }
-  return new GoogleGenAI({ apiKey });
+  return apiKey;
 };
+
+const ASI_ENDPOINT = "https://api.asi1.ai/v1/chat/completions"; // Placeholder for ASI One endpoint
 
 const getFromCache = (key: string) => {
   const cached = localStorage.getItem(CACHE_PREFIX + key);
@@ -41,9 +42,9 @@ const callWithRetry = async (fn: () => Promise<any>, retries = 3, delay = 2000) 
     try {
       return await fn();
     } catch (error: any) {
-      const isQuotaError = error?.message?.includes("429") || error?.status === 429 || JSON.stringify(error).includes("429");
+      const isQuotaError = error?.message?.includes("429") || error?.status === 429;
       if (isQuotaError && i < retries - 1) {
-        await sleep(delay * Math.pow(2, i)); // Exponential backoff
+        await sleep(delay * Math.pow(2, i));
         continue;
       }
       throw error;
@@ -51,31 +52,52 @@ const callWithRetry = async (fn: () => Promise<any>, retries = 3, delay = 2000) 
   }
 };
 
+const callASI = async (prompt: string, isJson = false) => {
+  const apiKey = getApiKey();
+  if (apiKey === "PENDING_ASI_KEY") {
+    throw new Error("ASI One API Key is required. Please provide it in the environment variables.");
+  }
+
+  const response = await fetch(ASI_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: "asi-1", // Placeholder model name
+      messages: [{ role: "user", content: prompt }],
+      response_format: isJson ? { type: "json_object" } : undefined,
+      temperature: 0.7
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`ASI One API Error: ${response.status} ${JSON.stringify(errorData)}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+};
+
 export const generateSkillRoadmap = async (skill: string) => {
   const cacheKey = `roadmap_${skill.toLowerCase().replace(/\s+/g, '_')}`;
   const cached = getFromCache(cacheKey);
   if (cached) return cached;
 
-  const ai = getAI();
   const result = await callWithRetry(async () => {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", // Switched to Flash for higher quota
-      contents: `You are a friendly and encouraging AI Study Tutor for students. 
+    return await callASI(`You are a friendly and encouraging AI Study Tutor for students. 
       Create a highly detailed, student-friendly learning roadmap for: ${skill}. 
       
       Structure your response as follows:
       1. **Overview**: Why this skill is exciting and important in 2026.
       2. **Prerequisites**: What you should know before starting.
       3. **Phase 1-3**: A step-by-step guide with specific topics and recommended free resources.
-      4. **Job Market Insight**: Use real-time data to show current salary ranges and top companies hiring for this skill.
+      4. **Job Market Insight**: Show current salary ranges and top companies hiring for this skill.
       5. **Pro Tip**: A unique piece of advice for mastering this skill.
       
-      Use a warm, approachable tone. Use emojis to make it engaging.`,
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
-    });
-    return response.text;
+      Use a warm, approachable tone. Use emojis to make it engaging.`);
   });
 
   if (result) setInCache(cacheKey, result);
@@ -87,11 +109,8 @@ export const generateModuleContent = async (moduleTitle: string) => {
   const cached = getFromCache(cacheKey);
   if (cached) return JSON.parse(cached);
 
-  const ai = getAI();
   const result = await callWithRetry(async () => {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Generate a professional, highly interactive 10-page technical curriculum for the topic: "${moduleTitle}".
+    const content = await callASI(`Generate a professional, highly interactive 10-page technical curriculum for the topic: "${moduleTitle}".
       
       Guidelines for Content:
       1. Use Markdown formatting extensively (headers, bold text, code blocks).
@@ -101,29 +120,8 @@ export const generateModuleContent = async (moduleTitle: string) => {
       5. Each page must be a deep dive into a specific sub-topic.
       6. At least 10 pages are required.
       
-      Format the output as a JSON object with a "pages" array. Each page object must have "title" and "content" (Markdown string).`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            pages: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING },
-                  content: { type: Type.STRING }
-                },
-                required: ["title", "content"]
-              }
-            }
-          },
-          required: ["pages"]
-        }
-      }
-    });
-    return response.text;
+      Format the output as a JSON object with a "pages" array. Each page object must have "title" and "content" (Markdown string).`, true);
+    return content;
   });
 
   if (result) {
@@ -139,29 +137,21 @@ export const getRecommendedSkills = async () => {
   if (cached) return cached;
 
   try {
-    const ai = getAI();
     const result = await callWithRetry(async () => {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview", // Switched to Flash for higher quota
-        contents: `Act as a career counselor for students. 
+      return await callASI(`Act as a career counselor for students. 
         What are the top 5 most exciting and in-demand tech skills for students to learn in 2026? 
         For each skill:
         - Give it a catchy title.
-        - Explain why it's trending using real-time job market data.
+        - Explain why it's trending using current job market data.
         - Mention one "cool" project a student could build with it.
         
-        Format with clear headings and bullet points.`,
-        config: {
-          tools: [{ googleSearch: {} }],
-        },
-      });
-      return response.text;
+        Format with clear headings and bullet points.`);
     });
 
     if (result) setInCache(cacheKey, result);
     return result;
   } catch (error) {
-    console.warn("Gemini API failed, using fallback data:", error);
+    console.warn("ASI One API failed, using fallback data:", error);
     const fallback = `### 🚀 Top Trending Skills for 2026 (Offline Mode)
 
 1. **Agentic AI Engineering**

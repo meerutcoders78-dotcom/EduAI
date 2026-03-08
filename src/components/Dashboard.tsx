@@ -22,7 +22,7 @@ import {
   Box
 } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/clerk-react';
-import { generateSkillRoadmap, getRecommendedSkills } from '../services/geminiService';
+import { generateSkillRoadmap, getRecommendedSkills } from '../services/aiService';
 import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
 import { MODULES, ModuleInfo } from '../constants/modules';
