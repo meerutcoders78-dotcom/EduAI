@@ -160,20 +160,20 @@ export function ModulePage() {
   return (
     <div className="min-h-screen bg-background pb-20 selection:bg-primary/20">
       {/* Header */}
-      <header className="h-20 border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-40 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <header className="h-16 lg:h-20 border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-6 flex items-center justify-between">
+        <div className="flex items-center gap-3 lg:gap-4">
           <Link to="/dashboard" className="p-2 hover:bg-secondary rounded-xl transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">{moduleInfo.title}</h1>
-            <p className="text-xs text-muted-foreground font-medium">Production-Ready Curriculum</p>
+          <div className="min-w-0">
+            <h1 className="text-sm lg:text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 truncate max-w-[120px] sm:max-w-none">{moduleInfo.title}</h1>
+            <p className="text-[8px] lg:text-xs text-muted-foreground font-medium truncate">Production-Ready Curriculum</p>
           </div>
         </div>
-        <div className="flex items-center gap-6">
-          <div className="hidden md:flex flex-col items-end">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Module Progress</span>
-            <div className="w-32 h-1.5 bg-secondary rounded-full mt-1 overflow-hidden">
+        <div className="flex items-center gap-3 lg:gap-6">
+          <div className="hidden sm:flex flex-col items-end">
+            <span className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Module Progress</span>
+            <div className="w-24 lg:w-32 h-1 lg:h-1.5 bg-secondary rounded-full mt-1 overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${((currentPage + 1) / (moduleContent?.pages.length || 1)) * 100}%` }}
@@ -181,17 +181,17 @@ export function ModulePage() {
               />
             </div>
           </div>
-          <div className="h-8 w-px bg-border hidden md:block" />
+          <div className="h-6 lg:h-8 w-px bg-border hidden sm:block" />
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <BookOpen className="w-4 h-4 text-primary" />
+            <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <BookOpen className="w-3.5 h-3.5 lg:w-4 h-4 text-primary" />
             </div>
-            <span className="text-sm font-bold">Page {currentPage + 1} of {moduleContent?.pages.length || 10}</span>
+            <span className="text-xs lg:text-sm font-bold whitespace-nowrap">Page {currentPage + 1} of {moduleContent?.pages.length || 10}</span>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 pt-10 max-w-5xl">
+      <main className="container mx-auto px-4 lg:px-6 pt-6 lg:pt-10 max-w-5xl">
         <AnimatePresence>
           {error && (
             <motion.div 
@@ -206,20 +206,20 @@ export function ModulePage() {
         </AnimatePresence>
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-40 space-y-10">
-            <div className="relative w-32 h-32">
+          <div className="flex flex-col items-center justify-center py-20 lg:py-40 space-y-8 lg:space-y-10">
+            <div className="relative w-24 h-24 lg:w-32 lg:h-32">
               <motion.div 
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 className="w-full h-full border-4 border-primary/20 border-t-primary rounded-full"
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Rocket className="w-10 h-10 text-primary animate-bounce" />
+                <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-primary animate-bounce" />
               </div>
             </div>
-            <div className="text-center space-y-4 max-w-sm">
-              <h2 className="text-3xl font-black tracking-tighter">Installing Module...</h2>
-              <p className="text-muted-foreground font-medium">Configuring technical curriculum and production guides for {moduleInfo.title}.</p>
+            <div className="text-center space-y-4 max-w-sm px-4">
+              <h2 className="text-2xl lg:text-3xl font-black tracking-tighter">Installing Module...</h2>
+              <p className="text-sm lg:text-base text-muted-foreground font-medium">Configuring technical curriculum and production guides for {moduleInfo.title}.</p>
               <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -231,17 +231,17 @@ export function ModulePage() {
             </div>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_300px] gap-10">
+          <div className="grid lg:grid-cols-[1fr_300px] gap-6 lg:gap-10">
             {/* Content */}
-            <div className="space-y-10">
-              <section className="bg-card border border-border rounded-[32px] p-10 shadow-sm relative overflow-hidden group">
+            <div className="space-y-6 lg:space-y-10">
+              <section className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-10 shadow-sm relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-primary/10 transition-colors" />
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest">{moduleInfo.category}</span>
-                    <span className="text-xs text-muted-foreground font-medium">Page {currentPage + 1}</span>
+                    <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[8px] lg:text-[10px] font-bold uppercase tracking-widest">{moduleInfo.category}</span>
+                    <span className="text-[10px] lg:text-xs text-muted-foreground font-medium">Page {currentPage + 1}</span>
                   </div>
-                  <h2 className="text-4xl font-black tracking-tighter mb-6 gradient-text animate-gradient">
+                  <h2 className="text-2xl lg:text-4xl font-black tracking-tighter mb-4 lg:mb-6 gradient-text animate-gradient">
                     {moduleContent?.pages[currentPage].title}
                   </h2>
                 </div>
@@ -249,7 +249,7 @@ export function ModulePage() {
 
               <div 
                 ref={scrollRef}
-                className="bg-card border border-border rounded-[32px] p-10 shadow-sm markdown-body prose prose-slate dark:prose-invert max-w-none h-[600px] overflow-y-auto custom-scrollbar"
+                className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-10 shadow-sm markdown-body prose prose-slate dark:prose-invert max-w-none h-[500px] lg:h-[600px] overflow-y-auto custom-scrollbar"
               >
                 <motion.div
                   key={currentPage}
@@ -261,34 +261,34 @@ export function ModulePage() {
                 </motion.div>
                 
                 {currentPage === (moduleContent?.pages.length || 0) - 1 && (
-                  <div className="mt-20 p-8 border-2 border-dashed border-emerald-500/20 rounded-3xl bg-emerald-500/5 text-center">
-                    <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-emerald-600 mb-2">Final Step Reached</h3>
-                    <p className="text-sm text-muted-foreground">Scroll to the very bottom to complete this module and earn your certificate.</p>
+                  <div className="mt-10 lg:mt-20 p-6 lg:p-8 border-2 border-dashed border-emerald-500/20 rounded-2xl lg:rounded-3xl bg-emerald-500/5 text-center">
+                    <CheckCircle2 className="w-10 h-10 lg:w-12 lg:h-12 text-emerald-500 mx-auto mb-4" />
+                    <h3 className="text-lg lg:text-xl font-bold text-emerald-600 mb-2">Final Step Reached</h3>
+                    <p className="text-xs lg:text-sm text-muted-foreground">Scroll to the very bottom to complete this module and earn your certificate.</p>
                   </div>
                 )}
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between bg-card border border-border p-6 rounded-[28px] shadow-sm">
+              <div className="flex flex-col sm:flex-row items-center justify-between bg-card border border-border p-4 lg:p-6 rounded-[24px] lg:rounded-[28px] shadow-sm gap-4">
                 <button
                   onClick={() => {
                     setCurrentPage(prev => Math.max(0, prev - 1));
                     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   disabled={currentPage === 0}
-                  className="px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-secondary transition-all disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl lg:rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-secondary transition-all disabled:opacity-50"
                 >
-                  <ChevronRight className="w-5 h-5 rotate-180" /> Previous Page
+                  <ChevronRight className="w-5 h-5 rotate-180" /> Previous
                 </button>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 lg:gap-2">
                   {moduleContent?.pages.map((_, i) => (
                     <div 
                       key={i} 
                       className={cn(
-                        "w-2 h-2 rounded-full transition-all",
-                        i === currentPage ? "w-6 bg-primary" : "bg-secondary"
+                        "w-1.5 lg:w-2 h-1.5 lg:h-2 rounded-full transition-all",
+                        i === currentPage ? "w-4 lg:w-6 bg-primary" : "bg-secondary"
                       )} 
                     />
                   ))}
@@ -302,7 +302,7 @@ export function ModulePage() {
                     }
                   }}
                   disabled={currentPage === (moduleContent?.pages.length || 0) - 1}
-                  className="px-6 py-3 bg-primary text-white rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
+                  className="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl lg:rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
                 >
                   Next Page <ChevronRight className="w-5 h-5" />
                 </button>
@@ -310,36 +310,36 @@ export function ModulePage() {
             </div>
 
             {/* Sidebar */}
-            <aside className="space-y-8">
-              <div className="bg-card border border-border rounded-[32px] p-8 shadow-sm sticky top-28 overflow-hidden">
+            <aside className="space-y-6 lg:space-y-8 pb-10 lg:pb-0">
+              <div className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-8 shadow-sm lg:sticky lg:top-28 overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
-                <h3 className="text-xl font-bold mb-8 flex items-center gap-3 relative z-10">
-                  <Code className="w-6 h-6 text-primary" /> Resources
+                <h3 className="text-lg lg:text-xl font-bold mb-6 lg:mb-8 flex items-center gap-3 relative z-10">
+                  <Code className="w-5 h-5 lg:w-6 h-6 text-primary" /> Resources
                 </h3>
-                <div className="space-y-4 relative z-10">
+                <div className="space-y-3 lg:space-y-4 relative z-10">
                   {moduleInfo.resources.map((res, i) => (
                     <a 
                       key={i}
                       href={res.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-5 bg-secondary/50 rounded-2xl hover:bg-primary hover:text-white transition-all group"
+                      className="flex items-center justify-between p-4 lg:p-5 bg-secondary/50 rounded-xl lg:rounded-2xl hover:bg-primary hover:text-white transition-all group"
                     >
-                      <span className="text-sm font-bold">{res.name}</span>
-                      <ExternalLink className="w-4 h-4 opacity-50 group-hover:opacity-100" />
+                      <span className="text-xs lg:text-sm font-bold">{res.name}</span>
+                      <ExternalLink className="w-3.5 h-3.5 lg:w-4 h-4 opacity-50 group-hover:opacity-100" />
                     </a>
                   ))}
                 </div>
 
-                <div className="mt-10 p-6 bg-primary/5 rounded-[24px] border border-primary/10 relative z-10">
+                <div className="mt-8 lg:mt-10 p-5 lg:p-6 bg-primary/5 rounded-[20px] lg:rounded-[24px] border border-primary/10 relative z-10">
                   <div className="flex items-center gap-2 mb-3">
-                    <SparklesIcon className="w-4 h-4 text-primary" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Module Status</p>
+                    <SparklesIcon className="w-3.5 h-3.5 lg:w-4 h-4 text-primary" />
+                    <p className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Module Status</p>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                  <p className="text-[10px] lg:text-xs text-muted-foreground leading-relaxed font-medium">
                     {completedModules.includes(moduleId!) 
                       ? "You have successfully completed this module and earned your certificate." 
-                      : "Read through all 10 pages and scroll to the bottom of the last page to complete."}
+                      : "Read through all pages and scroll to the bottom of the last page to complete."}
                   </p>
                 </div>
               </div>

@@ -44,7 +44,8 @@ export function Dashboard() {
   const { user } = useUser();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'tutor' | 'market' | 'study' | 'certificates'>('overview');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [roadmap, setRoadmap] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [recommendedSkills, setRecommendedSkills] = useState<string | null>(null);
@@ -162,70 +163,91 @@ export function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden relative">
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-card border-r border-border transition-all duration-300 flex flex-col z-50",
-          isSidebarOpen ? "w-72" : "w-20"
+          "bg-card border-r border-border transition-all duration-300 flex flex-col z-[70] fixed lg:relative h-full",
+          isSidebarOpen ? "w-72" : "w-20",
+          "lg:translate-x-0",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         <div className="p-6 flex items-center justify-between">
-          {isSidebarOpen && (
+          {(isSidebarOpen || isMobileMenuOpen) && (
             <span className="text-2xl font-black tracking-tighter gradient-text animate-gradient flex items-center gap-2">
               <Box className="w-6 h-6 text-primary" /> Abilities AI
             </span>
           )}
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-secondary rounded-xl transition-colors"
+            className="p-2 hover:bg-secondary rounded-xl transition-colors hidden lg:block"
           >
             {isSidebarOpen ? <ChevronRight className="w-5 h-5 rotate-180" /> : <ChevronRight className="w-5 h-5" />}
           </button>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="p-2 hover:bg-secondary rounded-xl transition-colors lg:hidden"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
+        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto custom-scrollbar">
           <SidebarItem 
             icon={<LayoutDashboard />} 
             label="Overview" 
             active={activeTab === 'overview'} 
-            onClick={() => setActiveTab('overview')}
-            collapsed={!isSidebarOpen}
+            onClick={() => { setActiveTab('overview'); setIsMobileMenuOpen(false); }}
+            collapsed={!isSidebarOpen && !isMobileMenuOpen}
           />
           <SidebarItem 
             icon={<MessageSquare />} 
             label="AI Study Tutor" 
             active={activeTab === 'tutor'} 
-            onClick={() => setActiveTab('tutor')}
-            collapsed={!isSidebarOpen}
+            onClick={() => { setActiveTab('tutor'); setIsMobileMenuOpen(false); }}
+            collapsed={!isSidebarOpen && !isMobileMenuOpen}
           />
           <SidebarItem 
             icon={<BookOpen />} 
             label="Study Area" 
             active={activeTab === 'study'} 
-            onClick={() => setActiveTab('study')}
-            collapsed={!isSidebarOpen}
+            onClick={() => { setActiveTab('study'); setIsMobileMenuOpen(false); }}
+            collapsed={!isSidebarOpen && !isMobileMenuOpen}
           />
           <SidebarItem 
             icon={<TrendingUp />} 
             label="Market Insights" 
             active={activeTab === 'market'} 
-            onClick={() => setActiveTab('market')}
-            collapsed={!isSidebarOpen}
+            onClick={() => { setActiveTab('market'); setIsMobileMenuOpen(false); }}
+            collapsed={!isSidebarOpen && !isMobileMenuOpen}
           />
           <SidebarItem 
             icon={<Award />} 
             label="My Certificates" 
             active={activeTab === 'certificates'} 
-            onClick={() => setActiveTab('certificates')}
-            collapsed={!isSidebarOpen}
+            onClick={() => { setActiveTab('certificates'); setIsMobileMenuOpen(false); }}
+            collapsed={!isSidebarOpen && !isMobileMenuOpen}
           />
         </nav>
 
         <div className="p-4 border-t border-border bg-secondary/20">
-          <div className={cn("flex items-center gap-3 p-2 rounded-2xl", !isSidebarOpen && "justify-center")}>
+          <div className={cn("flex items-center gap-3 p-2 rounded-2xl", (!isSidebarOpen && !isMobileMenuOpen) && "justify-center")}>
             <UserButton afterSignOutUrl="/" />
-            {isSidebarOpen && (
+            {(isSidebarOpen || isMobileMenuOpen) && (
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-bold truncate">{user?.fullName || 'Student'}</span>
                 <span className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</span>
@@ -238,19 +260,27 @@ export function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
         {/* Header */}
-        <header className="h-20 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-40">
-          <div className="flex flex-col">
-            <h2 className="text-xl font-bold capitalize tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
-              {activeTab === 'overview' ? `Welcome back, ${user?.firstName || 'Student'}!` : activeTab.replace('-', ' ')}
-            </h2>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-              {activeTab === 'overview' ? "Your potential, unlocked." : "Engineered for Excellence"}
-            </p>
+        <header className="h-16 lg:h-20 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-4 lg:px-8 sticky top-0 z-40">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 hover:bg-secondary rounded-xl transition-colors lg:hidden"
+            >
+              <LayoutDashboard className="w-6 h-6 text-primary" />
+            </button>
+            <div className="flex flex-col">
+              <h2 className="text-lg lg:text-xl font-bold capitalize tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
+                {activeTab === 'overview' ? `Welcome back, ${user?.firstName || 'Student'}!` : activeTab.replace('-', ' ')}
+              </h2>
+              <p className="text-[8px] lg:text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                {activeTab === 'overview' ? "Your potential, unlocked." : "Engineered for Excellence"}
+              </p>
+            </div>
           </div>
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
           <AnimatePresence mode="wait">
             {activeTab === 'overview' && (
               <motion.div
@@ -293,18 +323,18 @@ export function Dashboard() {
                 </div>
 
                 {/* Recently Required Skills Card */}
-                <div className="bg-gradient-to-br from-primary/5 to-purple-500/5 border border-primary/20 p-8 rounded-[32px] relative overflow-hidden group">
+                <div className="bg-gradient-to-br from-primary/5 to-purple-500/5 border border-primary/20 p-6 lg:p-8 rounded-[24px] lg:rounded-[32px] relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-primary/20 transition-colors" />
-                  <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                    <div className="w-20 h-20 bg-primary text-white rounded-3xl flex items-center justify-center shrink-0 shadow-xl shadow-primary/20">
-                      <TrendingUp className="w-10 h-10" />
+                  <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-primary text-white rounded-2xl lg:rounded-3xl flex items-center justify-center shrink-0 shadow-xl shadow-primary/20">
+                      <TrendingUp className="w-8 h-8 lg:w-10 lg:h-10" />
                     </div>
-                    <div className="flex-1 text-center md:text-left">
-                      <h3 className="text-2xl font-black tracking-tight mb-2">Recently Required Skills</h3>
-                      <p className="text-muted-foreground mb-4">Based on 50,000+ job postings analyzed in the last 24 hours.</p>
-                      <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                    <div className="flex-1 text-center lg:text-left">
+                      <h3 className="text-xl lg:text-2xl font-black tracking-tight mb-2">Recently Required Skills</h3>
+                      <p className="text-sm lg:text-base text-muted-foreground mb-4">Based on 50,000+ job postings analyzed in the last 24 hours.</p>
+                      <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
                         {['Rust', 'Next.js 15', 'Tailwind v4', 'Agentic AI', 'Vector DBs', 'WebGPU'].map(skill => (
-                          <span key={skill} className="px-4 py-1.5 bg-background border border-border rounded-full text-xs font-bold hover:border-primary transition-colors cursor-default">
+                          <span key={skill} className="px-3 py-1 lg:px-4 lg:py-1.5 bg-background border border-border rounded-full text-[10px] lg:text-xs font-bold hover:border-primary transition-colors cursor-default">
                             {skill}
                           </span>
                         ))}
@@ -312,7 +342,7 @@ export function Dashboard() {
                     </div>
                     <button 
                       onClick={() => setActiveTab('market')}
-                      className="px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
+                      className="w-full lg:w-auto px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
                     >
                       Explore Trends
                     </button>
@@ -322,18 +352,18 @@ export function Dashboard() {
                 {/* Recommended Skills Section */}
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-bold tracking-tight">Trending Skills for 2026</h3>
-                    <button onClick={() => setActiveTab('market')} className="text-sm font-bold text-primary hover:underline">View All Trends</button>
+                    <h3 className="text-xl lg:text-2xl font-bold tracking-tight">Trending Skills for 2026</h3>
+                    <button onClick={() => setActiveTab('market')} className="text-xs lg:text-sm font-bold text-primary hover:underline">View All Trends</button>
                   </div>
                   
                   {isSkillsLoading ? (
-                    <div className="grid md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {[1, 2, 3].map(i => (
                         <div key={i} className="h-48 bg-secondary/50 animate-pulse rounded-3xl border border-border" />
                       ))}
                     </div>
                   ) : recommendedSkills ? (
-                    <div className="bg-card p-8 rounded-3xl border border-border shadow-sm markdown-body">
+                    <div className="bg-card p-6 lg:p-8 rounded-3xl border border-border shadow-sm markdown-body overflow-x-auto">
                       <Markdown>{recommendedSkills}</Markdown>
                     </div>
                   ) : (
@@ -482,28 +512,28 @@ export function Dashboard() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="max-w-6xl mx-auto space-y-10"
+                className="max-w-6xl mx-auto space-y-8 lg:space-y-10"
               >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center">
-                      <BookOpen className="w-6 h-6" />
+                    <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-500/10 text-blue-500 rounded-xl lg:rounded-2xl flex items-center justify-center">
+                      <BookOpen className="w-5 h-5 lg:w-6 h-6" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold tracking-tight">Study Area</h2>
-                      <p className="text-muted-foreground">Explore 200+ specialized technical modules.</p>
+                      <h2 className="text-2xl lg:text-3xl font-bold tracking-tight">Study Area</h2>
+                      <p className="text-xs lg:text-sm text-muted-foreground">Explore 200+ specialized technical modules.</p>
                     </div>
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="relative">
+                  <div className="flex flex-col sm:flex-row gap-3 lg:gap-4">
+                    <div className="relative flex-1">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <input 
                         type="text"
                         placeholder="Search modules..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-12 pr-6 py-3 bg-card border border-border rounded-2xl w-full sm:w-64 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                        className="pl-12 pr-6 py-3 bg-card border border-border rounded-2xl w-full lg:w-64 focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
                       />
                     </div>
                     <select 
@@ -518,7 +548,7 @@ export function Dashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                   {filteredModules.map(module => (
                     <StudyCard 
                       key={module.id}
@@ -545,63 +575,63 @@ export function Dashboard() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="max-w-5xl mx-auto space-y-8"
+                className="max-w-5xl mx-auto space-y-6 lg:space-y-8"
               >
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-pink-500/10 text-pink-500 rounded-2xl flex items-center justify-center">
-                    <Award className="w-6 h-6" />
+                <div className="flex items-center gap-4 mb-6 lg:mb-8">
+                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-pink-500/10 text-pink-500 rounded-xl lg:rounded-2xl flex items-center justify-center">
+                    <Award className="w-5 h-5 lg:w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold tracking-tight">My Certificates</h2>
-                    <p className="text-muted-foreground">Your verified achievements and professional credentials.</p>
+                    <h2 className="text-2xl lg:text-3xl font-bold tracking-tight">My Certificates</h2>
+                    <p className="text-xs lg:text-sm text-muted-foreground">Your verified achievements and professional credentials.</p>
                   </div>
                 </div>
 
                 {certificates.length === 0 ? (
-                  <div className="p-20 text-center bg-card border border-border rounded-[40px] space-y-6">
-                    <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto">
-                      <Award className="w-10 h-10 text-muted-foreground" />
+                  <div className="p-10 lg:p-20 text-center bg-card border border-border rounded-[24px] lg:rounded-[40px] space-y-6">
+                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-secondary rounded-full flex items-center justify-center mx-auto">
+                      <Award className="w-8 h-8 lg:w-10 lg:h-10 text-muted-foreground" />
                     </div>
                     <div className="max-w-sm mx-auto">
-                      <h3 className="text-xl font-bold mb-2">No Certificates Yet</h3>
-                      <p className="text-muted-foreground">Complete all modules in a study area to earn your first professional certificate.</p>
+                      <h3 className="text-lg lg:text-xl font-bold mb-2">No Certificates Yet</h3>
+                      <p className="text-sm text-muted-foreground">Complete all modules in a study area to earn your first professional certificate.</p>
                     </div>
                     <button 
                       onClick={() => setActiveTab('study')}
-                      className="px-8 py-3 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-all"
+                      className="w-full sm:w-auto px-8 py-3 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-all"
                     >
                       Start Learning
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-6 lg:space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                       {certificates.map((cert) => (
-                        <div key={cert.id} className="bg-card border border-border p-8 rounded-[32px] shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
+                        <div key={cert.id} className="bg-card border border-border p-6 lg:p-8 rounded-[24px] lg:rounded-[32px] shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
                           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
-                          <div className="flex items-center justify-between mb-6 relative z-10">
-                            <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                              <Award className="w-7 h-7" />
+                          <div className="flex items-center justify-between mb-4 lg:mb-6 relative z-10">
+                            <div className="w-12 h-12 lg:w-14 lg:h-14 bg-primary/10 rounded-xl lg:rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                              <Award className="w-6 h-6 lg:w-7 h-7" />
                             </div>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full">Verified Achievement</span>
+                            <span className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full">Verified Achievement</span>
                           </div>
                           <div className="relative z-10">
-                            <h3 className="text-2xl font-black tracking-tight mb-2">{cert.module_name}</h3>
-                            <p className="text-sm text-muted-foreground mb-8">Issued on {new Date(cert.issued_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                            <div className="flex gap-3">
+                            <h3 className="text-xl lg:text-2xl font-black tracking-tight mb-2">{cert.module_name}</h3>
+                            <p className="text-xs lg:text-sm text-muted-foreground mb-6 lg:mb-8">Issued on {new Date(cert.issued_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                            <div className="flex flex-col sm:flex-row gap-3">
                               <button 
                                 onClick={() => setSelectedCertificate(cert)}
-                                className="flex-1 py-4 bg-secondary text-foreground rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-accent transition-all"
+                                className="flex-1 py-3 lg:py-4 bg-secondary text-foreground rounded-xl lg:rounded-2xl font-bold text-[10px] lg:text-xs flex items-center justify-center gap-2 hover:bg-accent transition-all"
                               >
                                 <ExternalLink className="w-4 h-4" /> View Certificate
                               </button>
                               <button 
                                 onClick={() => {
                                   const url = window.location.origin;
-                                  const text = `I'm thrilled to share that I've just earned my professional certificate in ${cert.module_name} from EduAI! 🚀 Check it out: ${url} #EduAI #Learning #ProfessionalDevelopment #Chirag`;
+                                  const text = `I'm thrilled to share that I've just earned my professional certificate in ${cert.module_name} from Abilities AI! 🚀 Check it out: ${url} #AbilitiesAI #Learning #ProfessionalDevelopment #ChiragTankan`;
                                   window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
                                 }}
-                                className="flex-1 py-4 bg-primary text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-lg shadow-primary/20"
+                                className="flex-1 py-3 lg:py-4 bg-primary text-white rounded-xl lg:rounded-2xl font-bold text-[10px] lg:text-xs flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-lg shadow-primary/20"
                               >
                                 <Linkedin className="w-4 h-4" /> Share
                               </button>
@@ -713,17 +743,17 @@ function SidebarItem({ icon, label, active, onClick, collapsed }: {
 
 function StatsCard({ title, value, trend, icon, color }: { title: string; value: string; trend: string; icon: React.ReactNode; color: string }) {
   return (
-    <div className="p-8 rounded-3xl bg-card border border-border shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden">
+    <div className="p-6 lg:p-8 rounded-[24px] lg:rounded-[32px] bg-card border border-border shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
       <div className="flex items-center justify-between mb-4 relative z-10">
-        <div className={cn("p-3 rounded-2xl bg-secondary transition-all group-hover:scale-110 group-hover:bg-primary group-hover:text-white", color)}>
+        <div className={cn("p-2.5 lg:p-3 rounded-xl lg:rounded-2xl bg-secondary transition-all group-hover:scale-110 group-hover:bg-primary group-hover:text-white", color)}>
           {icon}
         </div>
-        <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">{trend}</span>
+        <span className="text-[10px] lg:text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">{trend}</span>
       </div>
       <div className="relative z-10">
-        <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-        <span className="text-4xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/50">{value}</span>
+        <p className="text-xs lg:text-sm font-medium text-muted-foreground mb-1">{title}</p>
+        <span className="text-3xl lg:text-4xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/50">{value}</span>
       </div>
     </div>
   );
@@ -749,23 +779,23 @@ function StudyCard({ id, title, description, category, isCompleted }: {
 }) {
   return (
     <div className={cn(
-      "p-8 rounded-[32px] bg-card border border-border shadow-sm flex flex-col h-full group hover:border-primary/50 transition-all relative overflow-hidden",
+      "p-6 lg:p-8 rounded-[24px] lg:rounded-[32px] bg-card border border-border shadow-sm flex flex-col h-full group hover:border-primary/50 transition-all relative overflow-hidden",
       isCompleted && "border-emerald-500/30 bg-emerald-500/5"
     )}>
       <div className="flex-1 relative z-10">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{category}</span>
-          {isCompleted && <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full">Completed ✓</span>}
+          <span className="text-[8px] lg:text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{category}</span>
+          {isCompleted && <span className="text-[8px] lg:text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full">Completed ✓</span>}
         </div>
-        <h3 className="text-xl font-black tracking-tight mb-3 group-hover:text-primary transition-colors">{title}</h3>
-        <p className="text-sm text-muted-foreground mb-8 leading-relaxed line-clamp-2">{description}</p>
+        <h3 className="text-lg lg:text-xl font-black tracking-tight mb-3 group-hover:text-primary transition-colors">{title}</h3>
+        <p className="text-xs lg:text-sm text-muted-foreground mb-6 lg:mb-8 leading-relaxed line-clamp-2">{description}</p>
       </div>
       
       <div className="relative z-10">
         <Link 
           to={`/study-area/${id}`}
           className={cn(
-            "w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all text-sm",
+            "w-full py-3 lg:py-4 rounded-xl lg:rounded-2xl font-bold flex items-center justify-center gap-2 transition-all text-xs lg:text-sm",
             isCompleted 
               ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" 
               : "bg-primary text-white hover:scale-[1.02] shadow-lg shadow-primary/20"
