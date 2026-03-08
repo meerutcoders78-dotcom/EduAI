@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
-import { motion } from 'motion/react';
-import { Award, Download, Box, X } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Award, Download, Box, X, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import domtoimage from 'dom-to-image-more';
 
 interface CertificateProps {
   userName: string;
@@ -12,27 +13,33 @@ interface CertificateProps {
 
 export function Certificate({ userName, moduleTitle, date, onClose }: CertificateProps) {
   const certificateRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadImage = async () => {
-    if (!certificateRef.current) return;
+    if (!certificateRef.current || isDownloading) return;
     
+    setIsDownloading(true);
     try {
-      // Create a temporary container to ensure the certificate is rendered correctly for capture
-      // This helps with issues where the modal styles might interfere
-      const canvas = await html2canvas(certificateRef.current, {
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        onclone: (clonedDoc) => {
-          // Ensure the cloned element is visible
-          const el = clonedDoc.getElementById('certificate-capture');
-          if (el) el.style.display = 'flex';
+      const element = certificateRef.current;
+      
+      // Use dom-to-image-more for better modern CSS support
+      const dataUrl = await domtoimage.toPng(element, {
+        quality: 1.0,
+        bgcolor: '#ffffff',
+        width: 1200,
+        height: 848,
+        style: {
+          transform: 'none',
+          margin: '0',
+          padding: '0',
+          borderRadius: '0',
+          boxShadow: 'none',
+          display: 'flex',
+          visibility: 'visible',
+          opacity: '1'
         }
       });
 
-      const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
       link.href = dataUrl;
@@ -40,8 +47,34 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error("Download error", error);
-      alert("Unable to download certificate. Please try again or take a screenshot.");
+      console.error("Primary download error", error);
+      // Fallback to html2canvas if dom-to-image-more fails
+      try {
+        const canvas = await html2canvas(certificateRef.current, {
+          scale: 3,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          onclone: (clonedDoc) => {
+            const el = clonedDoc.getElementById('certificate-capture');
+            if (el) el.style.display = 'flex';
+          }
+        });
+
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (fallbackError) {
+        console.error("Fallback download error", fallbackError);
+        alert("Unable to download certificate. Please try again or take a screenshot.");
+      }
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -124,9 +157,18 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2">
           <button 
             onClick={handleDownloadImage}
-            className="w-full sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-primary text-white rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
+            disabled={isDownloading}
+            className="w-full sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-primary text-white rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download className="w-4 h-4" /> Download Certificate
+            {isDownloading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Generating...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" /> Download Certificate
+              </>
+            )}
           </button>
         </div>
         

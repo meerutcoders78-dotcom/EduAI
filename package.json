@@ -23,6 +23,7 @@
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "cors": "^2.8.6",
+    "dom-to-image-more": "^3.7.2",
     "express": "^5.2.1",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.546.0",
