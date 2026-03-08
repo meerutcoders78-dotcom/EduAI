@@ -17,28 +17,24 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadImage = async () => {
-    if (!captureRef.current || isDownloading) return;
+    if (!certificateRef.current || isDownloading) return;
     
     setIsDownloading(true);
     try {
-      // Ensure the capture element is ready
-      const element = captureRef.current;
+      const element = certificateRef.current;
       
-      // Use dom-to-image-more with specific settings for clarity
-      const dataUrl = await domtoimage.toPng(element, {
-        quality: 1.0,
-        bgcolor: '#ffffff',
-        width: 1200,
-        height: 848,
-        style: {
-          display: 'flex',
-          visibility: 'visible',
-          opacity: '1',
-          transform: 'none',
-          position: 'static'
-        }
+      // Use html2canvas with high scale for maximum clarity
+      const canvas = await html2canvas(element, {
+        scale: 4, // 4x resolution for print quality
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#1e3a8a', // Royal blue fallback
+        logging: false,
+        windowWidth: 1200,
+        windowHeight: 848,
       });
 
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
       const link = document.createElement('a');
       link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
       link.href = dataUrl;
@@ -46,30 +42,8 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error("Primary download error", error);
-      // Fallback to html2canvas
-      try {
-        const canvas = await html2canvas(captureRef.current, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          logging: false,
-          width: 1200,
-          height: 848
-        });
-
-        const dataUrl = canvas.toDataURL('image/png', 1.0);
-        const link = document.createElement('a');
-        link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (fallbackError) {
-        console.error("Fallback download error", fallbackError);
-        alert("Unable to download certificate. Please try again or take a screenshot.");
-      }
+      console.error("Download error", error);
+      alert("Unable to download certificate. Please try again or take a screenshot.");
     } finally {
       setIsDownloading(false);
     }
@@ -97,7 +71,7 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
         </motion.div>
         
         <div className="space-y-1 sm:space-y-2">
-          <h2 className="text-2xl sm:text-4xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Congratulations!</h2>
+          <h2 className="text-2xl sm:text-4xl font-black tracking-tighter text-primary">Congratulations!</h2>
           <p className="text-sm sm:text-lg text-muted-foreground font-medium">You've officially mastered {moduleTitle}</p>
         </div>
         
@@ -105,48 +79,52 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
           <div 
             ref={certificateRef}
             id="certificate-capture"
-            className="aspect-[1.414/1] bg-white text-slate-900 p-4 sm:p-10 flex flex-col items-center justify-center space-y-3 sm:space-y-6 shadow-2xl relative overflow-hidden rounded-[22px] sm:rounded-[38px]"
+            className="aspect-[1.414/1] bg-gradient-to-br from-[#1e3a8a] via-[#3b0764] to-[#1e3a8a] text-white p-4 sm:p-10 flex flex-col items-center justify-center space-y-3 sm:space-y-6 shadow-2xl relative overflow-hidden rounded-[22px] sm:rounded-[38px]"
           >
-            {/* Certificate Content - Professional Design */}
-            <div className="absolute top-0 left-0 w-full h-1.5 sm:h-3 bg-gradient-to-r from-blue-700 via-blue-600 to-purple-700" />
-            <div className="absolute bottom-0 left-0 w-full h-1.5 sm:h-3 bg-gradient-to-r from-blue-700 via-blue-600 to-purple-700" />
-            <div className="absolute top-0 left-0 w-16 h-16 sm:w-32 sm:h-32 bg-blue-700/5 rounded-full -ml-8 -mt-8 sm:-ml-16 sm:-mt-16 blur-xl sm:blur-2xl" />
-            <div className="absolute bottom-0 right-0 w-16 h-16 sm:w-32 sm:h-32 bg-purple-700/5 rounded-full -mr-8 -mb-8 sm:-mr-16 sm:-mb-16 blur-xl sm:blur-2xl" />
+            {/* Certificate Content - Royal Design */}
+            <div className="absolute top-0 left-0 w-full h-1.5 sm:h-3 bg-gradient-to-r from-blue-400 via-blue-200 to-purple-400 opacity-80" />
+            <div className="absolute bottom-0 left-0 w-full h-1.5 sm:h-3 bg-gradient-to-r from-blue-400 via-blue-200 to-purple-400 opacity-80" />
             
+            {/* Decorative Ornaments */}
+            <div className="absolute top-4 left-4 sm:top-8 sm:left-8 w-8 h-8 sm:w-16 sm:h-16 border-t-2 border-l-2 border-blue-300/30 rounded-tl-2xl" />
+            <div className="absolute top-4 right-4 sm:top-8 sm:right-8 w-8 h-8 sm:w-16 sm:h-16 border-t-2 border-r-2 border-blue-300/30 rounded-tr-2xl" />
+            <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 w-8 h-8 sm:w-16 sm:h-16 border-b-2 border-l-2 border-blue-300/30 rounded-bl-2xl" />
+            <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 w-8 h-8 sm:w-16 sm:h-16 border-b-2 border-r-2 border-blue-300/30 rounded-br-2xl" />
+
             <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-              <div className="w-5 h-5 sm:w-8 sm:h-8 bg-blue-700 rounded-md sm:rounded-lg flex items-center justify-center">
-                <Box className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
+              <div className="w-6 h-6 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg flex items-center justify-center">
+                <Box className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <span className="text-sm sm:text-xl font-black tracking-tighter text-slate-900">Abilities AI</span>
+              <span className="text-sm sm:text-2xl font-black tracking-tighter text-white">Abilities AI</span>
             </div>
 
-            <div className="space-y-0.5 sm:space-y-1 text-center">
-              <h3 className="text-lg sm:text-3xl font-serif italic text-blue-800">Certificate of Excellence</h3>
-              <p className="text-[5px] sm:text-[8px] uppercase tracking-[0.3em] sm:tracking-[0.5em] font-black text-slate-400">This professional credential is awarded to</p>
+            <div className="space-y-0.5 sm:space-y-2 text-center">
+              <h3 className="text-xl sm:text-4xl font-serif italic text-blue-100">Certificate of Excellence</h3>
+              <p className="text-[5px] sm:text-[10px] uppercase tracking-[0.3em] sm:tracking-[0.5em] font-black text-blue-200/60">This professional credential is awarded to</p>
             </div>
 
-            <p className="text-xl sm:text-4xl font-black tracking-tight text-slate-900 border-b border-slate-100 pb-1 sm:pb-2 min-w-[150px] sm:min-w-[250px]">{userName}</p>
+            <p className="text-2xl sm:text-5xl font-black tracking-tight text-white border-b border-white/20 pb-1 sm:pb-3 min-w-[180px] sm:min-w-[350px] text-center">{userName}</p>
             
-            <div className="space-y-0.5 sm:space-y-1 text-center max-w-[90%]">
-              <p className="text-[6px] sm:text-xs text-slate-500 font-medium">for successfully completing the production-ready curriculum and mastering</p>
-              <p className="text-sm sm:text-2xl font-black text-blue-700 tracking-tight">{moduleTitle}</p>
+            <div className="space-y-0.5 sm:space-y-2 text-center max-w-[90%]">
+              <p className="text-[6px] sm:text-sm text-blue-100/70 font-medium">for successfully completing the production-ready curriculum and mastering</p>
+              <p className="text-sm sm:text-3xl font-black text-white tracking-tight">{moduleTitle}</p>
             </div>
 
-            <div className="pt-4 sm:pt-8 flex items-center gap-6 sm:gap-12">
+            <div className="pt-4 sm:pt-10 flex items-center gap-8 sm:gap-20">
               <div className="text-center">
-                <div className="w-16 sm:w-32 h-px bg-slate-200 mb-1 sm:mb-2" />
-                <p className="text-[5px] sm:text-[8px] font-bold uppercase text-slate-400 tracking-widest">Date Issued</p>
-                <p className="text-[8px] sm:text-xs font-bold text-slate-700">{date}</p>
+                <div className="w-20 sm:w-40 h-px bg-white/20 mb-1 sm:mb-3" />
+                <p className="text-[5px] sm:text-[10px] font-bold uppercase text-blue-200/40 tracking-widest">Date Issued</p>
+                <p className="text-[8px] sm:text-sm font-bold text-white">{date}</p>
               </div>
               <div className="text-center">
-                <div className="w-16 sm:w-32 h-px bg-slate-200 mb-1 sm:mb-2" />
-                <p className="text-[5px] sm:text-[8px] font-bold uppercase text-slate-400 tracking-widest">Founder & Lead</p>
-                <p className="text-[8px] sm:text-xs font-bold text-slate-700 font-serif italic">Chirag Tankan</p>
+                <div className="w-20 sm:w-40 h-px bg-white/20 mb-1 sm:mb-3" />
+                <p className="text-[5px] sm:text-[10px] font-bold uppercase text-blue-200/40 tracking-widest">Founder & Lead</p>
+                <p className="text-[8px] sm:text-sm font-bold text-white font-serif italic">Chirag Tankan</p>
               </div>
             </div>
             
-            <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 opacity-5 sm:opacity-10">
-              <Award className="w-12 h-12 sm:w-24 sm:h-24 text-blue-800" />
+            <div className="absolute bottom-4 right-4 sm:bottom-10 sm:right-10 opacity-10">
+              <Award className="w-16 h-16 sm:w-32 sm:h-32 text-white" />
             </div>
           </div>
         </div>
@@ -170,56 +148,6 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
         </div>
         
         <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Your certificate is securely stored in your dashboard.</p>
-      </div>
-
-      {/* Hidden high-resolution certificate for capture only */}
-      <div className="fixed -left-[9999px] top-0">
-        <div 
-          ref={captureRef}
-          style={{ width: '1200px', height: '848px' }}
-          className="bg-white text-slate-900 p-20 flex flex-col items-center justify-center space-y-10 relative overflow-hidden"
-        >
-          {/* Borders */}
-          <div className="absolute top-0 left-0 w-full h-6 bg-blue-700" />
-          <div className="absolute bottom-0 left-0 w-full h-6 bg-blue-700" />
-          
-          {/* Logo Section */}
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-blue-700 rounded-xl flex items-center justify-center">
-              <Box className="w-8 h-8 text-white" />
-            </div>
-            <span className="text-3xl font-black tracking-tighter text-slate-900">Abilities AI</span>
-          </div>
-
-          <div className="space-y-2 text-center">
-            <h3 className="text-5xl font-serif italic text-blue-800">Certificate of Excellence</h3>
-            <p className="text-xs uppercase tracking-[0.5em] font-black text-slate-400">This professional credential is awarded to</p>
-          </div>
-
-          <p className="text-6xl font-black tracking-tight text-slate-900 border-b-2 border-slate-100 pb-4 min-w-[400px] text-center">{userName}</p>
-          
-          <div className="space-y-2 text-center max-w-[80%]">
-            <p className="text-lg text-slate-500 font-medium">for successfully completing the production-ready curriculum and mastering</p>
-            <p className="text-4xl font-black text-blue-700 tracking-tight">{moduleTitle}</p>
-          </div>
-
-          <div className="pt-12 flex items-center gap-24">
-            <div className="text-center">
-              <div className="w-48 h-0.5 bg-slate-200 mb-4" />
-              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Date Issued</p>
-              <p className="text-lg font-bold text-slate-700">{date}</p>
-            </div>
-            <div className="text-center">
-              <div className="w-48 h-0.5 bg-slate-200 mb-4" />
-              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Founder & Lead</p>
-              <p className="text-lg font-bold text-slate-700 font-serif italic">Chirag Tankan</p>
-            </div>
-          </div>
-          
-          <div className="absolute bottom-10 right-10 opacity-10">
-            <Award className="w-32 h-32 text-blue-800" />
-          </div>
-        </div>
       </div>
     </div>
   );
