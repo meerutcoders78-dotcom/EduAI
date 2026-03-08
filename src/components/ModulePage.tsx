@@ -21,13 +21,11 @@ import {
 import { useUser } from '@clerk/clerk-react';
 import Markdown from 'react-markdown';
 import confetti from 'canvas-confetti';
-import { GoogleGenAI, Type } from '@google/genai';
 import { cn } from '../lib/utils';
 import { MODULES } from '../constants/modules';
 import { Certificate } from './Certificate';
 import { storageService } from '../services/storageService';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { generateModuleContent } from '../services/geminiService';
 
 interface ModulePageContent {
   pages: {
@@ -65,72 +63,9 @@ export function ModulePage() {
         });
       }, 500);
 
-      // Check cache first
-      const CACHE_KEY = `eduai_module_content_${moduleId}`;
-      const cachedContent = localStorage.getItem(CACHE_KEY);
-      if (cachedContent) {
-        try {
-          const data = JSON.parse(cachedContent);
-          setModuleContent(data);
-          setInstallProgress(100);
-          setTimeout(() => setIsLoading(false), 800);
-          clearInterval(interval);
-          return;
-        } catch (e) {
-          localStorage.removeItem(CACHE_KEY);
-        }
-      }
-
       try {
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: `Generate a professional, highly interactive 10-page technical curriculum for the topic: "${moduleInfo.title}".
-          
-          Guidelines for Content:
-          1. Use Markdown formatting extensively (headers, bold text, code blocks).
-          2. Use bullet points and numbered lists to break down complex information.
-          3. Incorporate relevant emojis to make the content engaging and interactive.
-          4. Ensure the content is "production-ready", highly detailed, and follows industry best practices.
-          5. Each page must be a deep dive into a specific sub-topic.
-          6. At least 10 pages are required.
-          
-          Format the output as a JSON object with a "pages" array. Each page object must have "title" and "content" (Markdown string).`,
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                pages: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      title: { type: Type.STRING },
-                      content: { type: Type.STRING }
-                    },
-                    required: ["title", "content"]
-                  }
-                }
-              },
-              required: ["pages"]
-            }
-          }
-        });
-        
-        const data = JSON.parse(response.text || '{"pages": []}');
+        const data = await generateModuleContent(moduleInfo.title);
         setModuleContent(data);
-        // Cache the result
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-        } catch (e) {
-          // If storage is full, clear all module caches and try again
-          Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('eduai_module_content_')) {
-              localStorage.removeItem(key);
-            }
-          });
-          try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (e) {}
-        }
         setInstallProgress(100);
       } catch (error: any) {
         console.error("Failed to fetch module content", error);
@@ -145,10 +80,10 @@ export function ModulePage() {
       }
     };
 
-    const fetchProgress = () => {
+    const fetchProgress = async () => {
       if (!user) return;
       try {
-        const data = storageService.getProgress(user.id);
+        const data = await storageService.getProgress(user.id);
         setCompletedModules(data);
       } catch (err) {
         console.error("Failed to fetch progress", err);
@@ -188,9 +123,9 @@ export function ModulePage() {
     setIsMarking(true);
     
     try {
-      storageService.saveProgress(user.id, moduleId);
+      await storageService.saveProgress(user.id, moduleId);
       setCompletedModules(prev => [...prev, moduleId]);
-      handleIssueCertificate();
+      await handleIssueCertificate();
     } catch (error) {
       console.error("Failed to save progress", error);
     } finally {
@@ -202,7 +137,7 @@ export function ModulePage() {
     if (!user) return;
     
     try {
-      const result = storageService.issueCertificate(user.id, moduleInfo.title);
+      const result = await storageService.issueCertificate(user.id, moduleInfo.title);
 
       if (result.success) {
         confetti({

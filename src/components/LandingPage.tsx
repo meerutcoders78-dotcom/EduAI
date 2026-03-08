@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Sparkles, Target, TrendingUp, GraduationCap, Rocket, Brain, Globe } from 'lucide-react';
+import { ArrowRight, Box, Target, TrendingUp, GraduationCap, Rocket, Brain, Globe } from 'lucide-react';
 import { SignInButton, SignUpButton, useUser } from '@clerk/clerk-react';
 import { LoadingScreen } from './LoadingScreen';
 
@@ -24,9 +24,9 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
         <nav className="fixed top-0 w-full z-40 glass h-16 flex items-center px-6 pr-16 justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
-              <Sparkles className="w-5 h-5 text-white" />
+              <Box className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">EduAI</span>
+            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">Abilities AI</span>
           </div>
           <div className="flex items-center gap-4">
             {!isSignedIn ? (
@@ -68,8 +68,8 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                 transition={{ delay: 0.1 }}
                 className="text-6xl md:text-8xl font-extrabold tracking-tight mb-8 leading-[0.9]"
               >
-                Your Personal <br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-500 to-purple-600 animate-gradient">AI Study Partner</span>
+                Master Your <br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-500 to-purple-600 animate-gradient">Hidden Abilities</span>
               </motion.h1>
               
               <motion.p
@@ -78,8 +78,8 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                 transition={{ delay: 0.2 }}
                 className="text-xl text-muted-foreground mb-12 max-w-2xl leading-relaxed"
               >
-                Stop guessing what to learn. EduAI helps you build 
-                personalized roadmaps and real-time job market insights just for you.
+                Don't just learn—evolve. Abilities AI maps your path to mastery 
+                with precision-engineered roadmaps and real-time industry intelligence.
               </motion.p>
 
               <motion.div
@@ -117,8 +117,8 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
         <section className="py-32 relative">
           <div className="container mx-auto px-6">
             <div className="text-center mb-20">
-              <h2 className="text-4xl font-bold mb-4">Why Students Love EduAI</h2>
-              <p className="text-muted-foreground">Everything you need to succeed in the modern world.</p>
+              <h2 className="text-4xl font-bold mb-4">Why Choose Abilities AI</h2>
+              <p className="text-muted-foreground">The ultimate toolkit for the modern high-achiever.</p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -153,7 +153,7 @@ export function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
         {/* Footer */}
         <footer className="py-12 border-t border-border mt-20">
           <div className="container mx-auto px-6 text-center text-muted-foreground text-sm">
-            <p>© 2026 EduAI. Built for students, by Chirag.</p>
+            <p>© 2026 Abilities AI. Engineered for Excellence.</p>
           </div>
         </footer>
       </div>

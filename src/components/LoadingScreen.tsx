@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { Box } from 'lucide-react';
 
 export function LoadingScreen() {
   return (
@@ -33,8 +34,12 @@ export function LoadingScreen() {
           }}
           className="relative flex flex-col items-center"
         >
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter gradient-text animate-pulse">
-            Edu AI
+          <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-6 relative">
+            <Box className="w-12 h-12 text-primary animate-bounce" />
+            <div className="absolute inset-0 border-2 border-primary/20 rounded-[2rem] animate-ping" />
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter gradient-text animate-pulse">
+            Abilities AI
           </h1>
           <motion.div
             initial={{ width: 0 }}
@@ -42,8 +47,8 @@ export function LoadingScreen() {
             transition={{ duration: 1.5, ease: "easeInOut" }}
             className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 mt-2 rounded-full"
           />
-          <p className="mt-4 text-muted-foreground font-medium tracking-widest uppercase text-xs">
-            Preparing your future
+          <p className="mt-4 text-muted-foreground font-medium tracking-widest uppercase text-[10px]">
+            Unlocking Potential
           </p>
         </motion.div>
       </div>

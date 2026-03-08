@@ -18,7 +18,8 @@ import {
   X,
   Award,
   ExternalLink,
-  Linkedin
+  Linkedin,
+  Box
 } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/clerk-react';
 import { generateSkillRoadmap, getRecommendedSkills } from '../services/geminiService';
@@ -77,37 +78,15 @@ export function Dashboard() {
 
   useEffect(() => {
     const fetchSkills = async () => {
-      const CACHE_KEY = 'eduai_recommended_skills';
-      const CACHE_TIME_KEY = 'eduai_recommended_skills_time';
-      const ONE_DAY = 24 * 60 * 60 * 1000;
-
-      const cachedSkills = localStorage.getItem(CACHE_KEY);
-      const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-      const now = Date.now();
-
-      // Use cache if it's fresh (less than 24 hours old)
-      if (cachedSkills && cachedTime && (now - parseInt(cachedTime)) < ONE_DAY) {
-        setRecommendedSkills(cachedSkills);
-        setIsSkillsLoading(false);
-        return;
-      }
-
       setIsSkillsLoading(true);
       try {
         const skills = await getRecommendedSkills();
         if (skills) {
           setRecommendedSkills(skills);
-          localStorage.setItem(CACHE_KEY, skills);
-          localStorage.setItem(CACHE_TIME_KEY, now.toString());
         }
       } catch (error: any) {
         console.error("Failed to fetch skills", error);
-        // If API fails but we have old cache, use it as fallback
-        if (cachedSkills) {
-          setRecommendedSkills(cachedSkills);
-        } else {
-          setRecommendedSkills("### 🚀 Trending Skills for 2026\n\nWe're currently experiencing high demand for our AI insights. Please check back in a few minutes for the latest trending skills in Web Development, AI, and Cloud Computing!");
-        }
+        setRecommendedSkills("### 🚀 Trending Skills for 2026\n\nWe're currently experiencing high demand for our AI insights. Please check back in a few minutes for the latest trending skills in Web Development, AI, and Cloud Computing!");
       } finally {
         setIsSkillsLoading(false);
       }
@@ -116,11 +95,11 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const fetchData = () => {
+    const fetchData = async () => {
       if (!user) return;
       try {
-        const progressData = storageService.getProgress(user.id);
-        const certsData = storageService.getCertificates(user.id);
+        const progressData = await storageService.getProgress(user.id);
+        const certsData = await storageService.getCertificates(user.id);
         
         setCompletedModules(progressData);
         setCertificates(certsData);
@@ -194,7 +173,7 @@ export function Dashboard() {
         <div className="p-6 flex items-center justify-between">
           {isSidebarOpen && (
             <span className="text-2xl font-black tracking-tighter gradient-text animate-gradient flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-primary" /> EduAI
+              <Box className="w-6 h-6 text-primary" /> Abilities AI
             </span>
           )}
           <button 
@@ -264,8 +243,8 @@ export function Dashboard() {
             <h2 className="text-xl font-bold capitalize tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
               {activeTab === 'overview' ? `Welcome back, ${user?.firstName || 'Student'}!` : activeTab.replace('-', ' ')}
             </h2>
-            <p className="text-xs text-muted-foreground font-medium">
-              {activeTab === 'overview' ? "Here's what's happening in your learning journey." : "Made by Chirag"}
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+              {activeTab === 'overview' ? "Your potential, unlocked." : "Engineered for Excellence"}
             </p>
           </div>
         </header>
@@ -282,7 +261,7 @@ export function Dashboard() {
                 className="space-y-10"
               >
                 {/* Stats Grid */}
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-4 gap-6">
                   <StatsCard 
                     icon={<GraduationCap className="w-5 h-5" />}
                     title="Learning Progress" 
@@ -304,6 +283,40 @@ export function Dashboard() {
                     trend="New trends found"
                     color="text-orange-500"
                   />
+                  <StatsCard 
+                    icon={<Sparkles className="w-5 h-5" />}
+                    title="Recent Skills" 
+                    value="8" 
+                    trend="New requirements"
+                    color="text-emerald-500"
+                  />
+                </div>
+
+                {/* Recently Required Skills Card */}
+                <div className="bg-gradient-to-br from-primary/5 to-purple-500/5 border border-primary/20 p-8 rounded-[32px] relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-primary/20 transition-colors" />
+                  <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                    <div className="w-20 h-20 bg-primary text-white rounded-3xl flex items-center justify-center shrink-0 shadow-xl shadow-primary/20">
+                      <TrendingUp className="w-10 h-10" />
+                    </div>
+                    <div className="flex-1 text-center md:text-left">
+                      <h3 className="text-2xl font-black tracking-tight mb-2">Recently Required Skills</h3>
+                      <p className="text-muted-foreground mb-4">Based on 50,000+ job postings analyzed in the last 24 hours.</p>
+                      <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                        {['Rust', 'Next.js 15', 'Tailwind v4', 'Agentic AI', 'Vector DBs', 'WebGPU'].map(skill => (
+                          <span key={skill} className="px-4 py-1.5 bg-background border border-border rounded-full text-xs font-bold hover:border-primary transition-colors cursor-default">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('market')}
+                      className="px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
+                    >
+                      Explore Trends
+                    </button>
+                  </div>
                 </div>
 
                 {/* Recommended Skills Section */}
@@ -335,10 +348,44 @@ export function Dashboard() {
             {activeTab === 'tutor' && (
               <motion.div
                 key="tutor"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-background/60 backdrop-blur-sm"
+              >
+                <div className="max-w-md w-full bg-card border border-border p-10 rounded-[40px] text-center shadow-2xl space-y-6">
+                  <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto">
+                    <Bot className="w-10 h-10 text-primary animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black tracking-tight mb-2">Tutor Under Construction</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Our AI Study Tutor is currently undergoing a major brain upgrade to serve you better. 
+                      We're fine-tuning its knowledge base to provide even more accurate roadmaps and explanations.
+                    </p>
+                  </div>
+                  <div className="pt-4">
+                    <button 
+                      onClick={() => setActiveTab('overview')}
+                      className="w-full py-4 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-all shadow-lg shadow-primary/20"
+                    >
+                      Back to Overview
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                    Estimated Completion: 48 Hours
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'tutor' && (
+              <motion.div
+                key="tutor-bg"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col h-full max-w-5xl mx-auto"
+                className="flex flex-col h-full max-w-5xl mx-auto blur-md pointer-events-none"
               >
                 <div className="flex-1 space-y-6 pb-24">
                   {chatMessages.length === 0 ? (
