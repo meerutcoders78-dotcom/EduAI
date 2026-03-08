@@ -59,7 +59,7 @@ export const generateSkillRoadmap = async (skill: string) => {
   const ai = getAI();
   const result = await callWithRetry(async () => {
     const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-3-flash-preview", // Switched to Flash for higher quota
       contents: `You are a friendly and encouraging AI Study Tutor for students. 
       Create a highly detailed, student-friendly learning roadmap for: ${skill}. 
       
@@ -142,7 +142,7 @@ export const getRecommendedSkills = async () => {
     const ai = getAI();
     const result = await callWithRetry(async () => {
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-3-flash-preview", // Switched to Flash for higher quota
         contents: `Act as a career counselor for students. 
         What are the top 5 most exciting and in-demand tech skills for students to learn in 2026? 
         For each skill:

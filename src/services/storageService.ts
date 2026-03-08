@@ -10,6 +10,7 @@ const CERTIFICATES_KEY = 'eduai_user_certificates';
 
 export const storageService = {
   getProgress: async (userId: string): Promise<string[]> => {
+    if (!userId || userId === "undefined") return [];
     try {
       const response = await fetch(`/api/progress/${userId}`);
       if (response.ok) {
@@ -21,7 +22,10 @@ export const storageService = {
         return data;
       }
     } catch (error) {
-      console.error("Failed to fetch progress from server", error);
+      // Only log if it's not a common initialization issue
+      if (userId && userId !== "undefined") {
+        console.warn("Could not sync progress with server, using local data");
+      }
     }
     
     // Fallback to local storage
@@ -30,6 +34,7 @@ export const storageService = {
   },
 
   saveProgress: async (userId: string, moduleId: string): Promise<void> => {
+    if (!userId || userId === "undefined") return;
     // Save to local storage first for immediate feedback
     const allProgress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
     if (!allProgress[userId]) allProgress[userId] = [];
@@ -46,11 +51,12 @@ export const storageService = {
         body: JSON.stringify({ userId, moduleId })
       });
     } catch (error) {
-      console.error("Failed to save progress to server", error);
+      console.warn("Failed to save progress to server", error);
     }
   },
 
   getCertificates: async (userId: string): Promise<Certificate[]> => {
+    if (!userId || userId === "undefined") return [];
     try {
       const response = await fetch(`/api/certificates/${userId}`);
       if (response.ok) {
@@ -62,7 +68,9 @@ export const storageService = {
         return data;
       }
     } catch (error) {
-      console.error("Failed to fetch certificates from server", error);
+      if (userId && userId !== "undefined") {
+        console.warn("Could not sync certificates with server, using local data");
+      }
     }
 
     // Fallback to local storage
@@ -71,6 +79,7 @@ export const storageService = {
   },
 
   issueCertificate: async (userId: string, moduleName: string): Promise<{ success: boolean; alreadyExists?: boolean }> => {
+    if (!userId || userId === "undefined") return { success: false };
     // Optimistically update local storage
     const allCerts = JSON.parse(localStorage.getItem(CERTIFICATES_KEY) || '{}');
     if (!allCerts[userId]) allCerts[userId] = [];

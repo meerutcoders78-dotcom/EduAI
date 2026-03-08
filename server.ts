@@ -35,12 +35,16 @@ async function startServer() {
   // API Routes
   app.get("/api/progress/:userId", (req, res) => {
     const { userId } = req.params;
+    if (!userId || userId === "undefined" || userId === "null") {
+      return res.status(400).json({ error: "Invalid User ID" });
+    }
     const rows = db.prepare("SELECT module_id FROM user_progress WHERE user_id = ?").all(userId) as { module_id: string }[];
     res.json(rows.map(r => r.module_id));
   });
 
   app.post("/api/progress", (req, res) => {
     const { userId, moduleId } = req.body;
+    if (!userId) return res.status(400).json({ error: "User ID required" });
     try {
       db.prepare("INSERT OR IGNORE INTO user_progress (user_id, module_id) VALUES (?, ?)").run(userId, moduleId);
       res.json({ success: true });
@@ -51,12 +55,16 @@ async function startServer() {
 
   app.get("/api/certificates/:userId", (req, res) => {
     const { userId } = req.params;
+    if (!userId || userId === "undefined" || userId === "null") {
+      return res.status(400).json({ error: "Invalid User ID" });
+    }
     const rows = db.prepare("SELECT * FROM certificates WHERE user_id = ?").all(userId);
     res.json(rows);
   });
 
   app.post("/api/certificates", (req, res) => {
     const { userId, moduleName } = req.body;
+    if (!userId) return res.status(400).json({ error: "User ID required" });
     try {
       const existing = db.prepare("SELECT * FROM certificates WHERE user_id = ? AND module_name = ?").get(userId, moduleName);
       if (existing) {
@@ -72,6 +80,11 @@ async function startServer() {
     } catch (error) {
       res.status(500).json({ error: "Failed to issue certificate" });
     }
+  });
+
+  // API 404 handler - must be before Vite/Static middleware
+  app.all("/api/*", (req, res) => {
+    res.status(404).json({ error: "API route not found" });
   });
 
   // Vite middleware for development

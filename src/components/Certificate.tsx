@@ -23,18 +23,18 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
     try {
       const element = certificateRef.current;
       
-      // Use html2canvas with high scale for maximum clarity
-      const canvas = await html2canvas(element, {
-        scale: 4, // 4x resolution for print quality
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#1e3a8a', // Royal blue fallback
-        logging: false,
-        windowWidth: 1200,
-        windowHeight: 848,
+      // Use dom-to-image-more which handles modern CSS better than html2canvas
+      // We use a high-quality PNG export
+      const dataUrl = await domtoimage.toPng(element, {
+        quality: 1.0,
+        width: 1200,
+        height: 848,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        }
       });
 
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
       const link = document.createElement('a');
       link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
       link.href = dataUrl;
