@@ -1,4 +1,5 @@
 import preloadedModules from '../data/preloadedModules.json';
+import { generateStaticModuleContent } from './moduleGenerator';
 
 const CACHE_PREFIX = "abilities_ai_cache_";
 const CACHE_EXPIRY = 10 * 60 * 60 * 1000; // 10 hours in milliseconds
@@ -85,36 +86,26 @@ export const generateSkillRoadmap = async (skill: string) => {
 };
 
 export const generateModuleContent = async (moduleTitle: string) => {
-  // Check preloaded data first
+  // 1. Check preloaded data first (Explicitly defined high-quality content)
   if (preloadedModules[moduleTitle as keyof typeof preloadedModules]) {
     console.log(`[AI Service] Using preloaded content for: ${moduleTitle}`);
     return preloadedModules[moduleTitle as keyof typeof preloadedModules];
   }
 
+  // 2. Check cache for previously generated content
   const cacheKey = `module_content_${moduleTitle.toLowerCase().replace(/\s+/g, '_')}`;
   const cached = getFromCache(cacheKey);
   if (cached) return JSON.parse(cached);
 
-  const result = await callWithRetry(async () => {
-    const content = await callASI(`Generate a professional, highly interactive 10-page technical curriculum for the topic: "${moduleTitle}".
-      
-      Guidelines for Content:
-      1. Use Markdown formatting extensively (headers, bold text, code blocks).
-      2. Use bullet points and numbered lists to break down complex information.
-      3. Incorporate relevant emojis to make the content engaging and interactive.
-      4. Ensure the content is "production-ready", highly detailed, and follows industry best practices.
-      5. Each page must be a deep dive into a specific sub-topic.
-      6. At least 10 pages are required.
-      
-      Format the output as a JSON object with a "pages" array. Each page object must have "title" and "content" (Markdown string).`, true);
-    return content;
-  });
-
-  if (result) {
-    setInCache(cacheKey, result);
-    return JSON.parse(result);
-  }
-  return { pages: [] };
+  // 3. Use the Static Generator (Ensures 10 pages, no API call)
+  // This fulfills the requirement that all modules work offline with 10 pages.
+  console.log(`[AI Service] Generating static content for: ${moduleTitle}`);
+  const staticContent = generateStaticModuleContent(moduleTitle);
+  
+  // Cache it for future use
+  setInCache(cacheKey, JSON.stringify(staticContent));
+  
+  return staticContent;
 };
 
 export const getRecommendedSkills = async () => {

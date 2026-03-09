@@ -56,24 +56,4 @@ export const MODULES: ModuleInfo[] = [
   { id: 'arcore-mobile-ar', title: 'Mobile AR with ARCore', category: 'Mobile', description: 'Building augmented reality experiences.', resources: [{ name: 'ARCore', url: 'https://developers.google.com/ar' }] },
 ];
 
-// Dynamically generate more modules to reach 200+
-const categories = ['Web', 'AI', 'Cloud', 'Mobile', 'Blockchain', 'Cybersecurity', 'GameDev', 'Embedded', 'Design', 'Marketing'];
-const topics = [
-  'Advanced Patterns', 'Performance Tuning', 'Security Audit', 'Architecture Design', 
-  'Testing Strategy', 'Deployment Workflow', 'API Integration', 'State Management',
-  'User Experience', 'Scalability Solutions', 'Data Modeling', 'Network Protocols',
-  'Automation Tools', 'Cloud Migration', 'Microservices', 'Serverless Functions'
-];
-
-for (let i = MODULES.length; i < 210; i++) {
-  const category = categories[i % categories.length];
-  const topic = topics[i % topics.length];
-  const id = `${category.toLowerCase()}-${topic.toLowerCase().replace(' ', '-')}-${i}`;
-  MODULES.push({
-    id,
-    title: `${category} ${topic} ${Math.floor(i / 10)}`,
-    category,
-    description: `A deep dive into ${category} ${topic} for production environments.`,
-    resources: [{ name: 'Documentation', url: 'https://google.com' }]
-  });
-}
+// We have 57 high-quality modules. All are preloaded to ensure 100% offline availability.

@@ -818,7 +818,7 @@ function StudyCard({ id, title, description, category, isCompleted }: {
   category: string;
   isCompleted: boolean;
 }) {
-  const isPreloaded = !!preloadedModules[title as keyof typeof preloadedModules];
+  const isOfflineReady = true; // All modules now use the static generator fallback
 
   return (
     <div className={cn(
@@ -829,9 +829,9 @@ function StudyCard({ id, title, description, category, isCompleted }: {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-[8px] lg:text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{category}</span>
-            {isPreloaded && (
+            {isOfflineReady && (
               <span className="text-[8px] lg:text-[10px] font-bold text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full flex items-center gap-1">
-                <Sparkles className="w-2 h-2 lg:w-2.5 lg:h-2.5" /> Preloaded
+                <Sparkles className="w-2 h-2 lg:w-2.5 lg:h-2.5" /> Offline Ready
               </span>
             )}
           </div>
