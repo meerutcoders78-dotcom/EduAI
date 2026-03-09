@@ -40,44 +40,56 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
     try {
       const element = certificateRef.current;
       
-      // Use html2canvas for more reliable rendering of standard layouts
-      const canvas = await html2canvas(element, {
-        scale: 2, // High resolution
-        useCORS: true,
-        backgroundColor: null, // Respect element background
-        logging: false,
-        width: 1200,
-        height: 848,
-        onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.querySelector('[data-cert-container]') as HTMLElement;
-          if (clonedElement) {
-            clonedElement.style.transform = 'none';
-            clonedElement.style.margin = '0';
-            clonedElement.style.border = 'none'; // Ensure no border on the captured element
-            clonedElement.style.borderRadius = '0'; // Often better for clean edges in downloads
+      // We'll try dom-to-image-more first as it handles complex CSS better
+      // We need to ensure the element is visible and has no transforms during capture
+      const originalTransform = element.style.transform;
+      const originalMargin = element.style.marginBottom;
+      
+      element.style.transform = 'none';
+      element.style.marginBottom = '0';
+      
+      try {
+        const dataUrl = await domtoimage.toPng(element, {
+          width: 1200,
+          height: 848,
+          style: {
+            transform: 'none',
+            margin: '0',
+            left: '0',
+            top: '0'
           }
-          // Remove any potential debug borders that might be showing up from global styles
-          const allElements = clonedDoc.querySelectorAll('*');
-          allElements.forEach((el) => {
-            if (el instanceof HTMLElement) {
-              // Force reset borders that aren't explicitly defined in the component
-              const style = window.getComputedStyle(el);
-              if (style.borderStyle === 'none' || style.borderWidth === '0px') {
-                el.style.border = 'none';
-                el.style.outline = 'none';
-              }
-            }
-          });
-        }
-      });
+        });
 
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
-      const link = document.createElement('a');
-      link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+        const link = document.createElement('a');
+        link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (domError) {
+        console.warn("dom-to-image failed, falling back to html2canvas", domError);
+        
+        // Fallback to html2canvas
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#0b1622',
+          width: 1200,
+          height: 848,
+        });
+
+        const dataUrl = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+        link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } finally {
+        // Restore styles
+        element.style.transform = originalTransform;
+        element.style.marginBottom = originalMargin;
+      }
     } catch (error) {
       console.error("Download error", error);
       alert("Unable to download certificate. Please try again.");

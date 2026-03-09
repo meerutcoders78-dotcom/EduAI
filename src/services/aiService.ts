@@ -1,3 +1,5 @@
+import preloadedModules from '../data/preloadedModules.json';
+
 const CACHE_PREFIX = "abilities_ai_cache_";
 const CACHE_EXPIRY = 10 * 60 * 60 * 1000; // 10 hours in milliseconds
 
@@ -83,6 +85,12 @@ export const generateSkillRoadmap = async (skill: string) => {
 };
 
 export const generateModuleContent = async (moduleTitle: string) => {
+  // Check preloaded data first
+  if (preloadedModules[moduleTitle as keyof typeof preloadedModules]) {
+    console.log(`[AI Service] Using preloaded content for: ${moduleTitle}`);
+    return preloadedModules[moduleTitle as keyof typeof preloadedModules];
+  }
+
   const cacheKey = `module_content_${moduleTitle.toLowerCase().replace(/\s+/g, '_')}`;
   const cached = getFromCache(cacheKey);
   if (cached) return JSON.parse(cached);

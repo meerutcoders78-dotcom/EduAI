@@ -261,10 +261,38 @@ export function ModulePage() {
                 </motion.div>
                 
                 {currentPage === (moduleContent?.pages.length || 0) - 1 && (
-                  <div className="mt-10 lg:mt-20 p-6 lg:p-8 border-2 border-dashed border-emerald-500/20 rounded-2xl lg:rounded-3xl bg-emerald-500/5 text-center">
-                    <CheckCircle2 className="w-10 h-10 lg:w-12 lg:h-12 text-emerald-500 mx-auto mb-4" />
-                    <h3 className="text-lg lg:text-xl font-bold text-emerald-600 mb-2">Final Step Reached</h3>
-                    <p className="text-xs lg:text-sm text-muted-foreground">Scroll to the very bottom to complete this module and earn your certificate.</p>
+                  <div className="mt-10 lg:mt-20 p-6 lg:p-10 border-2 border-dashed border-emerald-500/30 rounded-[32px] bg-emerald-500/5 text-center space-y-6">
+                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="w-8 h-8 lg:w-10 lg:h-10 text-emerald-500" />
+                    </div>
+                    <div className="max-w-md mx-auto">
+                      <h3 className="text-xl lg:text-2xl font-black tracking-tight text-emerald-600">Module Complete!</h3>
+                      <p className="text-sm lg:text-base text-muted-foreground font-medium">You've reached the end of the curriculum. Click below to claim your professional certificate.</p>
+                    </div>
+                    <button 
+                      onClick={handleCompleteModule}
+                      disabled={isMarking}
+                      className={cn(
+                        "w-full sm:w-auto px-12 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all shadow-xl",
+                        completedModules.includes(moduleId!)
+                          ? "bg-emerald-500 text-white shadow-emerald-500/20"
+                          : "bg-primary text-white shadow-primary/20 hover:scale-105"
+                      )}
+                    >
+                      {isMarking ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" /> Processing...
+                        </>
+                      ) : completedModules.includes(moduleId!) ? (
+                        <>
+                          <Award className="w-5 h-5" /> View Certificate
+                        </>
+                      ) : (
+                        <>
+                          <Rocket className="w-5 h-5" /> Claim Your Certificate
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
               </div>

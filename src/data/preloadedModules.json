@@ -1,0 +1,42 @@
+{
+  "Introduction to Next.js": {
+    "pages": [
+      {
+        "title": "What is Next.js?",
+        "content": "Next.js is a React framework for building full-stack web applications. You use React Components to build user interfaces, and Next.js for additional features and optimizations.\n\n### Key Features:\n- **Routing**: A file-system based router built on top of Server Components.\n- **Rendering**: Client-side and Server-side Rendering with Next.js.\n- **Data Fetching**: Simplified data fetching with async/await in Server Components.\n- **Styling**: Support for CSS Modules, Tailwind CSS, and CSS-in-JS.\n- **Optimizations**: Image, Font, and Script Optimizations to improve Core Web Vitals."
+      },
+      {
+        "title": "Server Components vs Client Components",
+        "content": "Next.js uses Server Components by default. This allows you to render components on the server and reduce the amount of JavaScript sent to the client.\n\n### Server Components:\n- Fetch data on the server.\n- Keep sensitive information on the server (tokens, API keys).\n- Reduce client-side JavaScript.\n\n### Client Components:\n- Use hooks like `useState`, `useEffect`.\n- Use browser APIs.\n- Add interactivity (event listeners)."
+      }
+    ]
+  },
+  "Mastering Tailwind CSS": {
+    "pages": [
+      {
+        "title": "Utility-First Fundamentals",
+        "content": "Tailwind CSS works by scanning all of your HTML files, JavaScript components, and any other templates for class names, generating the corresponding styles and then writing them to a static CSS file.\n\n### Why Utility-First?\n- **No more naming classes**: You don't have to think of names like `sidebar-inner-wrapper`.\n- **CSS stops growing**: Since you're reusing utilities, your CSS bundle stays small.\n- **Safer changes**: Changing a utility class in one place doesn't break other parts of your site."
+      }
+    ]
+  },
+  "AI Engineering Fundamentals": {
+    "pages": [
+      {
+        "title": "Introduction to AI Engineering",
+        "content": "AI Engineering is the practice of building and deploying AI-powered applications. It involves understanding LLMs, prompt engineering, and vector databases.\n\n### Core Concepts:\n- **LLMs**: Large Language Models like GPT-4, Claude, and ASI One.\n- **Prompt Engineering**: The art of crafting inputs to get desired outputs.\n- **RAG**: Retrieval-Augmented Generation for grounding AI in specific data."
+      },
+      {
+        "title": "Vector Databases",
+        "content": "Vector databases store data as high-dimensional vectors, allowing for semantic search and efficient retrieval of relevant information for AI models."
+      }
+    ]
+  },
+  "Cloud Computing Basics": {
+    "pages": [
+      {
+        "title": "What is the Cloud?",
+        "content": "Cloud computing is the on-demand delivery of IT resources over the internet with pay-as-you-go pricing.\n\n### Benefits:\n- **Agility**: Rapidly develop and deploy applications.\n- **Elasticity**: Scale resources up or down as needed.\n- **Cost Savings**: Only pay for what you use."
+      }
+    ]
+  }
+}

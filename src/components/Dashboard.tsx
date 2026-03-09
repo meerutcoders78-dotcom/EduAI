@@ -183,14 +183,14 @@ export function Dashboard() {
           "bg-card border-r border-border transition-all duration-300 flex flex-col z-[70] fixed lg:relative h-full",
           isSidebarOpen ? "w-72" : "w-20",
           "lg:translate-x-0",
-          isMobileMenuOpen ? "translate-x-0 w-20" : "-translate-x-full lg:translate-x-0"
+          isMobileMenuOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        <div className="p-6 flex items-center justify-center lg:justify-between">
+        <div className="p-6 flex items-center justify-between">
           {(isSidebarOpen || isMobileMenuOpen || !isSidebarOpen) && (
             <span className={cn("text-2xl font-black tracking-tighter gradient-text animate-gradient flex items-center gap-2")}>
               <Box className="w-6 h-6 text-primary" /> 
-              {(isSidebarOpen || isMobileMenuOpen) && <span className="hidden lg:inline">Abilities AI</span>}
+              {(isSidebarOpen || isMobileMenuOpen) && <span>Abilities AI</span>}
             </span>
           )}
           <button 
@@ -201,7 +201,7 @@ export function Dashboard() {
           </button>
           <button 
             onClick={() => setIsMobileMenuOpen(false)}
-            className="p-2 hover:bg-secondary rounded-xl transition-colors lg:hidden absolute right-4"
+            className="p-2 hover:bg-secondary rounded-xl transition-colors lg:hidden"
           >
             <X className="w-5 h-5" />
           </button>
@@ -246,10 +246,10 @@ export function Dashboard() {
         </nav>
 
         <div className="p-4 border-t border-border bg-secondary/20">
-          <div className={cn("flex items-center gap-3 p-2 rounded-2xl", !isSidebarOpen && "justify-center")}>
+          <div className={cn("flex items-center gap-3 p-2 rounded-2xl", (!isSidebarOpen && !isMobileMenuOpen) && "justify-center")}>
             <UserButton afterSignOutUrl="/" />
-            {isSidebarOpen && (
-              <div className="flex flex-col min-w-0 hidden lg:flex">
+            {(isSidebarOpen || isMobileMenuOpen) && (
+              <div className="flex flex-col min-w-0">
                 <span className="text-sm font-bold truncate">{user?.fullName || 'Student'}</span>
                 <span className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</span>
               </div>
@@ -717,11 +717,11 @@ function SidebarItem({ icon, label, active, onClick, collapsed }: {
         active 
           ? "bg-primary text-white shadow-lg shadow-primary/30" 
           : "hover:bg-secondary text-muted-foreground hover:text-foreground",
-        collapsed && "justify-center px-0"
+        collapsed && "justify-center"
       )}
     >
       <span className={cn("w-5 h-5 transition-transform group-hover:scale-110", active && "scale-110")}>{icon}</span>
-      {!collapsed && <span className="font-bold text-sm">{label}</span>}
+      {!collapsed && <span className="font-bold text-sm whitespace-nowrap">{label}</span>}
       {active && !collapsed && (
         <motion.div 
           layoutId="sidebar-active"

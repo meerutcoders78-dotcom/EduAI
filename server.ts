@@ -83,11 +83,18 @@ async function startServer() {
   });
 
   // ASI One AI Proxy Route
+  app.get("/api/ai", (req, res) => {
+    res.json({ message: "AI Proxy is active. Use POST to interact." });
+  });
+
   app.post("/api/ai", async (req, res) => {
     const { prompt, isJson } = req.body;
     const apiKey = process.env.ASI_API_KEY;
 
+    console.log(`[AI Proxy] Received request. Prompt length: ${prompt?.length}, isJson: ${isJson}`);
+
     if (!apiKey) {
+      console.error("[AI Proxy] API Key missing");
       return res.status(500).json({ error: "ASI One API Key is missing on the server." });
     }
 
