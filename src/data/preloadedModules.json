@@ -1,5 +1,5 @@
 {
-  "Introduction to Next.js": {
+  "Next.js App Router": {
     "pages": [
       {
         "title": "What is Next.js?",
@@ -11,7 +11,7 @@
       }
     ]
   },
-  "Mastering Tailwind CSS": {
+  "Tailwind CSS Architecture": {
     "pages": [
       {
         "title": "Utility-First Fundamentals",
@@ -19,7 +19,7 @@
       }
     ]
   },
-  "AI Engineering Fundamentals": {
+  "Prompt Engineering": {
     "pages": [
       {
         "title": "Introduction to AI Engineering",
@@ -31,11 +31,43 @@
       }
     ]
   },
-  "Cloud Computing Basics": {
+  "Docker Containerization": {
     "pages": [
       {
         "title": "What is the Cloud?",
         "content": "Cloud computing is the on-demand delivery of IT resources over the internet with pay-as-you-go pricing.\n\n### Benefits:\n- **Agility**: Rapidly develop and deploy applications.\n- **Elasticity**: Scale resources up or down as needed.\n- **Cost Savings**: Only pay for what you use."
+      }
+    ]
+  },
+  "Advanced TypeScript": {
+    "pages": [
+      {
+        "title": "Generics and Utility Types",
+        "content": "TypeScript's Advanced features allow for complex type manipulations and reusable components.\n\n### Generics:\nGenerics provide a way to create reusable components that can work over a variety of types rather than a single one.\n\n```typescript\nfunction identity<T>(arg: T): T {\n  return arg;\n}\n```\n\n### Utility Types:\n- `Partial<T>`: Makes all properties in T optional.\n- `Readonly<T>`: Makes all properties in T readonly.\n- `Record<K, T>`: Constructs an object type with property keys K and value type T."
+      }
+    ]
+  },
+  "Web Security Essentials": {
+    "pages": [
+      {
+        "title": "Understanding XSS and CSRF",
+        "content": "Security is a critical aspect of modern web development. Understanding common vulnerabilities is the first step to building secure applications.\n\n### Cross-Site Scripting (XSS):\nXSS occurs when an attacker injects malicious scripts into content that is then served to other users.\n\n### Cross-Site Request Forgery (CSRF):\nCSRF is an attack that forces an authenticated user to execute unwanted actions on a web application in which they are currently authenticated."
+      }
+    ]
+  },
+  "PyTorch for Deep Learning": {
+    "pages": [
+      {
+        "title": "Tensors and Autograd",
+        "content": "PyTorch is a powerful library for deep learning that provides a flexible and efficient environment for building and training neural networks.\n\n### Tensors:\nTensors are the fundamental data structure in PyTorch, similar to NumPy arrays but with GPU support.\n\n### Autograd:\nAutograd is PyTorch's automatic differentiation engine that powers neural network training."
+      }
+    ]
+  },
+  "Kubernetes Orchestration": {
+    "pages": [
+      {
+        "title": "Pods, Services, and Deployments",
+        "content": "Kubernetes is an open-source system for automating deployment, scaling, and management of containerized applications.\n\n### Core Concepts:\n- **Pods**: The smallest deployable units in Kubernetes.\n- **Services**: An abstract way to expose an application running on a set of Pods.\n- **Deployments**: Provide declarative updates for Pods and ReplicaSets."
       }
     ]
   }

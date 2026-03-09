@@ -93,9 +93,12 @@ async function startServer() {
 
     console.log(`[AI Proxy] Received request. Prompt length: ${prompt?.length}, isJson: ${isJson}`);
 
-    if (!apiKey) {
-      console.error("[AI Proxy] API Key missing");
-      return res.status(500).json({ error: "ASI One API Key is missing on the server." });
+    if (!apiKey || apiKey === "MY_ASI_API_KEY") {
+      console.error("[AI Proxy] ASI One API Key is missing or using placeholder.");
+      return res.status(500).json({ 
+        error: "ASI One API Key is missing on the server.",
+        details: "Please ensure ASI_API_KEY is correctly set in your environment variables/secrets."
+      });
     }
 
     try {

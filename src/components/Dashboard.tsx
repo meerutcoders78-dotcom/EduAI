@@ -19,13 +19,15 @@ import {
   Award,
   ExternalLink,
   Linkedin,
-  Box
+  Box,
+  Download
 } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/clerk-react';
 import { generateSkillRoadmap, getRecommendedSkills } from '../services/aiService';
 import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
 import { MODULES, ModuleInfo } from '../constants/modules';
+import preloadedModules from '../data/preloadedModules.json';
 import { Certificate as CertificateComponent } from './Certificate';
 import { storageService } from '../services/storageService';
 
@@ -58,6 +60,19 @@ export function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
+  const [isApiHealthy, setIsApiHealthy] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkApi = async () => {
+      try {
+        const res = await fetch('/api/ai');
+        setIsApiHealthy(res.ok);
+      } catch {
+        setIsApiHealthy(false);
+      }
+    };
+    checkApi();
+  }, []);
 
   const filteredModules = MODULES.filter(m => {
     const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -282,6 +297,27 @@ export function Dashboard() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
+          {isApiHealthy === false && (
+            <div className="max-w-6xl mx-auto mb-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-amber-500">AI Service Offline</h4>
+                  <p className="text-xs text-amber-500/70">The ASI One API key is missing. Dynamic module generation is disabled, but preloaded modules will still work!</p>
+                </div>
+              </div>
+              <a 
+                href="https://ai.studio/build" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-amber-500 text-white text-xs font-bold rounded-xl hover:scale-105 transition-all whitespace-nowrap"
+              >
+                Configure Key
+              </a>
+            </div>
+          )}
           <AnimatePresence mode="wait">
             {activeTab === 'overview' && (
               <motion.div
@@ -527,6 +563,20 @@ export function Dashboard() {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row gap-3 lg:gap-4">
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([JSON.stringify(preloadedModules, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'abilities-ai-modules.json';
+                        link.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="px-6 py-3 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-500 hover:text-white transition-all"
+                    >
+                      <Download className="w-4 h-4" /> Download All Data
+                    </button>
                     <div className="relative flex-1">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <input 
@@ -768,6 +818,8 @@ function StudyCard({ id, title, description, category, isCompleted }: {
   category: string;
   isCompleted: boolean;
 }) {
+  const isPreloaded = !!preloadedModules[title as keyof typeof preloadedModules];
+
   return (
     <div className={cn(
       "p-6 lg:p-8 rounded-[24px] lg:rounded-[32px] bg-card border border-border shadow-sm flex flex-col h-full group hover:border-primary/50 transition-all relative overflow-hidden",
@@ -775,7 +827,14 @@ function StudyCard({ id, title, description, category, isCompleted }: {
     )}>
       <div className="flex-1 relative z-10">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-[8px] lg:text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{category}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[8px] lg:text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">{category}</span>
+            {isPreloaded && (
+              <span className="text-[8px] lg:text-[10px] font-bold text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full flex items-center gap-1">
+                <Sparkles className="w-2 h-2 lg:w-2.5 lg:h-2.5" /> Preloaded
+              </span>
+            )}
+          </div>
           {isCompleted && <span className="text-[8px] lg:text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full">Completed ✓</span>}
         </div>
         <h3 className="text-lg lg:text-xl font-black tracking-tight mb-3 group-hover:text-primary transition-colors">{title}</h3>

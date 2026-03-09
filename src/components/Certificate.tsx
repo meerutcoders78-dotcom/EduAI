@@ -52,6 +52,8 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
         const dataUrl = await domtoimage.toPng(element, {
           width: 1200,
           height: 848,
+          cacheBust: true,
+          bgcolor: '#0b1622',
           style: {
             transform: 'none',
             margin: '0',
