@@ -460,7 +460,7 @@ export function ModulePage() {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                   }}
-                  disabled={currentPage === (moduleContent?.pages.length || 0) - 1 || (currentPage === (moduleContent?.pages.length || 0) - 2 && !quizSubmitted)}
+                  disabled={currentPage === (moduleContent?.pages.length || 0) - 1}
                   className="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl lg:rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
                 >
                   {currentPage === (moduleContent?.pages.length || 0) - 2 ? "Take Quiz" : "Next Page"} <ChevronRight className="w-5 h-5" />
