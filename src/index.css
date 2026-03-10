@@ -101,6 +101,23 @@
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
   }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+
+  .animate-marquee-reverse {
+    animation: marquee 40s linear infinite reverse;
+  }
+
+  .pause-on-hover:hover {
+    animation-play-state: paused;
+  }
 }
 
 .markdown-body h1 { @apply text-3xl font-black tracking-tight mb-6 mt-10 text-foreground; }

@@ -22,228 +22,153 @@ export interface ModulePageContent {
 export const generateStaticModuleContent = (title: string): ModulePageContent => {
   const pages = [];
   
-  // Page 1: Introduction & The Big Picture
+  // Page 1: Introduction & The Strategic Foundation
   pages.push({
-    title: `1. Introduction to ${title}`,
-    content: `Welcome to the definitive professional guide on **${title}**. In the rapidly evolving landscape of 2026, mastering this domain is no longer optional for high-impact engineers—it is a foundational requirement for building the next generation of resilient, scalable, and intelligent systems.
+    title: "1. The Strategic Foundation",
+    content: `Welcome to your professional journey in **${title}**. In today's rapidly evolving tech landscape, simply knowing "how" to code or use a tool is no longer enough. To become a high-value expert, you must understand the **First Principles** that govern this domain.
 
-### The Core Value Proposition
-At its heart, **${title}** represents a paradigm shift in how we approach problem-solving in modern software engineering. Whether you are optimizing for user experience, system throughput, or developer productivity, the principles we cover here will serve as your compass.
+### Why ${title} Matters Now
+The modern economy rewards those who can bridge the gap between abstract concepts and production-ready solutions. By mastering **${title}**, you aren't just learning a skill; you're acquiring a strategic asset that allows you to:
+- **Solve Complex Problems**: Move beyond "Stack Overflow" solutions to deep, architectural thinking.
+- **Drive Innovation**: Understand the constraints and possibilities of the technology to push boundaries.
+- **Future-Proof Your Career**: Tools change, but the underlying logic of **${title}** remains constant.
 
-### Why ${title} is Critical in 2026
-1. **System Complexity**: As we move towards more distributed and AI-integrated systems, the need for robust ${title} practices has skyrocketed. Modern applications are no longer monolithic; they are interconnected webs of services, each requiring precise ${title} implementation to function correctly.
-2. **Performance Expectations**: Users now expect sub-100ms response times globally. ${title} is the key to achieving this at scale. In a world of instant gratification, even a 500ms delay can lead to significant user churn and lost revenue.
-3. **Security by Design**: With the rise of sophisticated cyber threats, integrating security directly into the ${title} lifecycle is paramount. We no longer treat security as a "bolt-on" feature; it must be woven into the very fabric of our code.
-
-### What Sets This Module Apart
-Unlike surface-level tutorials, this curriculum is built on three pillars:
-1. **First Principles Thinking**: We don't just show you *how*; we explain *why* things work the way they do. By understanding the underlying physics and logic of ${title}, you can adapt to any new framework or tool that emerges.
-2. **Production-Ready Patterns**: Every concept is paired with a pattern used by elite engineering teams at companies like Vercel, Stripe, and Anthropic. We focus on what works in the real world, under heavy load and high pressure.
-3. **Future-Proofing**: We focus on the standards that will remain relevant as AI-assisted coding becomes the norm. As AI takes over the "boilerplate," the role of the engineer shifts towards high-level architecture and ${title} strategy.
-
-### Your Learning Journey
-Over the next few pages, we will traverse the entire lifecycle of a **${title}** implementation:
-- **Foundations**: Architecture, mental models, and core pillars.
-- **Execution**: Advanced implementation, environment setup, and tooling.
-- **Optimization**: Performance tuning, security hardening, and rigorous testing.
-- **Delivery**: CI/CD, infrastructure as code, and real-world scaling strategies.
+### The Abilities AI Approach
+We don't just teach you syntax. We build your **Architectural Intuition**. Our curriculum is built on three pillars:
+1. **First Principles Thinking**: We explain the *why* so you can adapt to any *how*.
+2. **Production-Ready Patterns**: Every concept is paired with a pattern used by elite engineering teams at companies like Vercel and Stripe.
+3. **Future-Proofing**: We focus on the standards that will remain relevant even as AI takes over the "boilerplate" of coding.
 
 ### 🧠 Knowledge Check
-- What are the three pillars this module is built on?
 - Why is ${title} more critical now than 5 years ago?
 - What is the "First Principles" approach?
 
-> **Pro Tip**: As you go through these pages, try to relate each concept to a project you are currently working on. The best way to learn is by immediate application.`
+**Let's begin by looking at the core architecture that powers professional-grade systems.**`
   });
 
   // Page 2: Core Architecture & Mental Models
   pages.push({
-    title: "2. Deep Dive: Core Architecture",
-    content: `To master **${title}**, you must first master its internal mechanics. Architecture is the art of making trade-offs, and in this section, we explore the structural decisions that define a successful system.
+    title: "2. Architectural Mental Models",
+    content: `Mastery starts with how you visualize the system. For **${title}**, we use specific mental models to ensure our designs are robust and scalable.
 
-### The Three Pillars of ${title} Architecture
-1. **Decoupled Logic**: Separating concerns is the key to maintainability. We explore how to isolate core business logic from external dependencies (APIs, Databases, UI). This is often achieved through "Clean Architecture" or "Hexagonal Architecture" principles. By decoupling, you ensure that a change in your database provider doesn't require a rewrite of your business rules.
-2. **Data Flow Integrity**: Understanding how information moves through the system. Is it unidirectional? Event-driven? Reactive? We break down the pros and cons of each. In 2026, event-driven architectures are dominant for their scalability and resilience. We'll look at how to maintain data consistency in a distributed flow.
-3. **State Management Strategy**: How do we handle "truth" in a distributed or complex environment? We look at local vs. global state and the cost of synchronization. We'll discuss "Eventual Consistency" vs. "Strong Consistency" and when to choose which based on the CAP theorem.
+### The "Onion" Architecture
+Think of your system in layers. At the very center is your **Domain Logic**—the pure, unadulterated rules of your business.
+- **Inner Core**: Pure logic, no dependencies. This is the most stable part of your app.
+- **Application Layer**: Orchestrates the flow of data.
+- **Infrastructure Layer**: The "outer shell" where databases, APIs, and UIs live.
+
+### Why This Matters
+By decoupling your core logic from the "outer shell," you make your system **testable** and **evolvable**. If you need to switch from a SQL database to a NoSQL one, your core logic remains untouched.
 
 ### Essential Design Patterns in ${title}
-- **The Strategy Pattern**: Allowing algorithms to be selected at runtime. This is crucial for systems that need to support multiple providers or configurations without changing the core logic. For example, switching between different payment gateways or AI models.
-- **The Facade Pattern**: Providing a simplified interface to a complex body of code. Essential for maintaining clean boundaries in large-scale projects and reducing cognitive load for developers. It acts as a "gateway" to a complex subsystem.
-- **The Proxy Pattern**: Adding a layer of control over object access, useful for logging, caching, validation, and even lazy initialization of heavy resources. It allows you to intercept and manage interactions with an object.
+- **The Strategy Pattern**: Allowing algorithms to be selected at runtime. This is crucial for systems that need to support multiple providers or configurations.
+- **The Facade Pattern**: Providing a simplified interface to a complex body of code. Essential for maintaining clean boundaries.
+- **The Proxy Pattern**: Adding a layer of control over object access, useful for logging, caching, and validation.
 
-### Mental Model: The "Lego" Approach
-Think of **${title}** as a set of highly specialized blocks. Your job isn't just to snap them together, but to ensure the foundation can support the weight of the entire structure as it grows. Each block should have a clear interface and a single responsibility.
-
-\`\`\`mermaid
-graph TD
-    A[Entry Point] --> B{Router/Controller}
-    B --> C[Service Layer]
-    B --> D[Validation Layer]
-    C --> E[Data Store]
-    C --> F[External API]
-    D --> B
-    E --> C
-    F --> C
-\`\`\`
-*Visualization of a standard ${title} flow showing the separation of concerns.*
-
-### 🧠 Knowledge Check
-- Explain the difference between Decoupled Logic and Data Flow Integrity.
-- When would you choose the Strategy Pattern over a simple if/else block?
-- What are the risks of a poorly designed State Management Strategy?`
+### 🧠 Expert Tip
+Always ask: *"If I removed my framework today, how much of my business logic would survive?"* The higher that number, the better your architecture.`
   });
 
-  // Page 3: Professional Environment & Tooling
+  // Page 3: Implementation Excellence
   pages.push({
-    title: "3. The Professional Developer's Toolkit",
-    content: `A craftsman is only as good as their tools. For **${title}**, the ecosystem is vast, but a few key tools form the backbone of a high-velocity workflow.
+    title: "3. Implementation Excellence",
+    content: `Now, let's look at how we translate these architectural models into high-quality code. In **${title}**, "working code" is the bare minimum. We aim for **Excellence**.
 
-### The Modern Stack for ${title} in 2026
-- **Runtime/Compiler**: Leveraging the latest features of the engine (e.g., Node.js 22+, Bun, or specialized WASM runtimes for performance-critical sections). We'll discuss the move towards "Edge-first" runtimes.
-- **Static Analysis**: Going beyond basic linting. We use tools like Biome or specialized AST-based analyzers to catch logical flaws, security vulnerabilities, and performance anti-patterns before they ever run. This includes custom rules specific to ${title}.
-- **Containerization**: Using Docker or Dev Containers to ensure "it works on my machine" actually means "it works everywhere." This includes multi-stage builds for optimized production images and using Nix for reproducible environments.
+### The Three Pillars of Clean Implementation
+1. **Type Safety**: Use the compiler as your first line of defense. In professional **${title}** projects, we avoid \`any\` and embrace strict typing to catch errors before they ever reach production.
+2. **Predictability**: Functions should be pure whenever possible. Given the same input, they should always return the same output without side effects.
+3. **Self-Documenting Code**: Your code should tell a story. Use descriptive naming and clear structures so that a developer reading your code six months from now understands exactly what's happening.
 
-### Advanced Configuration Patterns
-Professional setups avoid "magic strings" and hardcoded values. We implement:
-1. **Type-Safe Environment Variables**: Using libraries like Zod or Valibot to validate \`process.env\` at startup. If a required variable is missing or malformed, the app fails fast with a clear error, preventing runtime crashes in production.
-2. **Path Aliasing**: Moving away from brittle relative imports like \`../../../../components\` to clean, absolute imports like \`@/components\`. This makes refactoring significantly easier and improves code readability.
-3. **Strict Mode Everything**: Enabling every "strict" flag available in your compiler (e.g., TypeScript's \`strict: true\`) to force better coding habits and catch entire classes of bugs (like null pointer exceptions) at compile-time.
-
-### Workflow Optimization
-- **Hot Module Replacement (HMR)**: Fine-tuning your dev server for sub-100ms updates. We'll look at how to preserve state across reloads using specialized HMR hooks.
-- **Automated Documentation**: Using tools like TypeDoc, Swagger, or Docusaurus to keep your API docs and internal guides in sync with your code automatically. Documentation is code.
-- **Git Hooks**: Using Husky and lint-staged to run linters and unit tests on every commit, ensuring the main branch stays green and reducing the burden on CI.
+### Real-World Example
+Instead of a generic \`handleData(x)\`, use \`processUserOnboarding(userData)\`. It's a small change that drastically improves maintainability.
 
 ### 🧠 Knowledge Check
-- Why is "Fail Fast" a good strategy for environment variables?
-- How does path aliasing improve maintainability?
-- What is the benefit of using Dev Containers over local installations?
+- Why is "Type Safety" critical for production systems?
+- What makes code "Self-Documenting"?
 
-> **Common Pitfall**: Spending too much time on "tooling" and not enough on "building." Aim for a setup that gets out of your way and lets you focus on the code. Start simple and add complexity only when it solves a recurring pain point.`
+**Next, we'll explore the advanced patterns that allow these systems to handle complex, real-world requirements.**`
   });
 
-  // Page 4: Advanced Implementation & Code Patterns
+  // Page 4: Advanced Patterns for Masters
   pages.push({
-    title: "4. Mastering Implementation Patterns",
-    content: `This is where the rubber meets the road. We move from theory to the actual code patterns that define high-quality **${title}** implementations.
+    title: "4. Advanced Patterns for Masters",
+    content: `As you move towards expert status in **${title}**, you'll encounter problems that simple logic can't solve. This is where **Design Patterns** come in.
 
-### Pattern 1: The Generic Wrapper
-When working with **${title}**, you often need to handle repetitive tasks like error handling, logging, or performance tracking. A generic wrapper ensures consistency across the codebase and reduces boilerplate.
+### The Strategy Pattern
+Imagine you have multiple ways to process a request (e.g., different payment methods). Instead of a giant \`if/else\` block, use the **Strategy Pattern**.
+- Define an interface for the operation.
+- Create separate classes for each strategy.
+- Select the strategy at runtime.
+*Result: Your code becomes modular and easy to extend.*
 
+### The Result Object Pattern
+Stop throwing errors for expected failures. Instead, return a **Result Object** that explicitly contains either a \`Success\` value or a \`Failure\` reason.
 \`\`\`typescript
-/**
- * A production-ready wrapper for asynchronous operations in ${title}
- */
-export async function executeSafe<T>(
-  operation: () => Promise<T>,
-  context: string
-): Promise<{ data: T | null; error: Error | null; duration: number }> {
-  const startTime = performance.now();
-  try {
-    const result = await operation();
-    const duration = performance.now() - startTime;
-    // In production, you'd send this to a monitoring service like Sentry or Datadog
-    console.log(\`[\${context}] Success in \${duration.toFixed(2)}ms\`);
-    return { data: result, error: null, duration };
-  } catch (err) {
-    const duration = performance.now() - startTime;
-    console.error(\`[\${context}] Failed after \${duration.toFixed(2)}ms:\`, err);
-    return { data: null, error: err instanceof Error ? err : new Error(String(err)), duration };
-  }
-}
+type Result<T> = { success: true; data: T } | { success: false; error: string };
 \`\`\`
-
-### Pattern 2: Composition over Inheritance
-In modern **${title}** development, we prefer building complex objects by combining smaller, simpler ones (mixins or functional composition). This leads to more flexible, reusable, and significantly more testable code than deep inheritance hierarchies, which often become brittle and hard to reason about.
-
-### Pattern 3: The "Result" Object
-Instead of throwing errors (which are essentially "GOTO" statements that can be hard to track and lead to unhandled exceptions), we return a "Result" object that explicitly handles both success and failure states. This forces the caller to handle the error case, leading to much more robust and predictable systems.
-
-### Deep Dive: Memory Management in ${title}
-- **Leak Detection**: How to use Chrome DevTools or Node.js heap snapshots to find objects that aren't being garbage collected. We'll look for common culprits like unclosed event listeners or global variables.
-- **Buffer Management**: Efficiently handling large data streams using \`Streams\` or \`Iterators\` without blowing up the memory limit. This is essential for processing large files or high-throughput API responses.
-- **WeakMaps/WeakSets**: Using these for metadata storage without preventing garbage collection of the keys. This is a powerful tool for attaching data to objects without causing leaks.
+This forces you to handle the error case, leading to much more resilient systems.
 
 ### 🧠 Knowledge Check
-- Why is the "Result" object pattern safer than try/catch blocks?
-- Explain "Composition over Inheritance" with a real-world example.
-- What is a common cause of memory leaks in ${title}?`
+- How does the Strategy Pattern improve code maintainability?
+- Why is returning a Result object safer than throwing an exception?`
   });
 
-  // Page 5: Performance & Security Hardening
+  // Page 5: Production-Grade Hardening
   pages.push({
-    title: "5. Performance & Security Hardening",
-    content: `In 2026, performance and security are two sides of the same coin. An inefficient system is a vulnerable system. Here is how we optimize and protect **${title}**.
+    title: "5. Production-Grade Hardening",
+    content: `A system that works but is slow or insecure is a liability. In this section, we harden our **${title}** implementation for the real world.
 
-### Performance Optimization
-1. **Memoization**: Caching the results of expensive function calls based on their inputs. We'll discuss when to use \`useMemo\` (React) vs. a custom LRU (Least Recently Used) cache for server-side logic.
-2. **Virtualization**: Only rendering or processing what is currently visible or needed. This is crucial for handling lists with thousands of items or complex data visualizations, preventing the DOM from becoming a bottleneck.
-3. **Parallelism vs. Concurrency**: Knowing when to use Web Workers (browser) or Worker Threads (Node.js) to move heavy computation off the main execution thread to keep the UI responsive.
+### Performance: The "Golden Signals"
+Monitor these four signals to understand your system's health:
+1. **Latency**: The time it takes to service a request.
+2. **Traffic**: The demand placed on your system.
+3. **Errors**: The rate of requests that fail.
+4. **Saturation**: How "full" your service is (e.g., CPU or memory usage).
 
-### Security Hardening
-- **The Principle of Least Privilege (PoLP)**: Every component, service, and user should have the absolute minimum level of access required to perform its function.
-- **Input Sanitization**: Using trusted libraries like DOMPurify or specialized schema validators (Zod) to strip malicious code or unexpected fields from user input. Never trust data from the client.
-- **Type-Level Security**: Using TypeScript's "branded types" or "opaque types" to ensure that a "ValidatedEmail" string cannot be accidentally confused with a raw, unvalidated "string".
+### Security: Defensive Programming
+- **Input Validation**: Never trust user input. Sanitize and validate everything at the boundary.
+- **Principle of Least Privilege**: Every component should only have the permissions it absolutely needs to function.
+- **Dependency Auditing**: Regularly check your third-party libraries for known vulnerabilities.
 
-### Network Efficiency
-- **Payload Minimization**: Using binary formats like Protocol Buffers (protobuf) or MessagePack instead of JSON for high-frequency or large-volume data transfer.
-- **Edge Computing**: Moving logic closer to the user (e.g., Cloudflare Workers, Vercel Edge) to reduce round-trip times and offload the origin server.
-
-### 🧠 Knowledge Check
-- What is the Principle of Least Privilege?
-- When should you use a Web Worker instead of just an async function?
-- How do "branded types" improve security in TypeScript?`
+**Security isn't a feature; it's a foundation.**`
   });
 
-  // Page 6: Testing, Deployment & Scaling
+  // Page 6: The Path to Production
   pages.push({
-    title: "6. Testing, Deployment & Scaling",
-    content: `The final stage of the **${title}** lifecycle. We move from a working implementation to a production-ready, global system.
+    title: "6. The Path to Production",
+    content: `The final step in mastering **${title}** is understanding how to get your code into the hands of users safely and reliably.
 
 ### The Testing Pyramid
-1. **Unit Tests (60%)**: Testing the smallest units of logic in isolation. These should be fast and deterministic.
-2. **Integration Tests (30%)**: Testing how multiple components or services interact. This is where most bugs live in complex ${title} flows.
-3. **End-to-End (E2E) Tests (10%)**: Testing the full user journey using tools like Playwright or Cypress.
+- **Unit Tests (Base)**: Test individual functions in isolation. Fast and numerous.
+- **Integration Tests (Middle)**: Test how components work together.
+- **E2E Tests (Top)**: Test the entire user journey. Slow but critical for confidence.
 
-### Modern CI/CD & Infrastructure
-- **Infrastructure as Code (IaC)**: Using YAML, HCL (Terraform), or TypeScript (Pulumi/CDK) to describe the desired state of your servers and networks.
-- **Canary Rollouts**: Deploying to a small percentage of users first to monitor for errors before a full rollout.
-- **Observability**: Implementing structured logging, real-time metrics, and distributed tracing to find the exact source of latency or errors.
+### CI/CD: Automated Excellence
+In a professional environment, we use **Continuous Integration and Deployment**. Every change is automatically:
+1. Linted for style.
+2. Type-checked for safety.
+3. Tested for correctness.
+4. Deployed to a staging environment for final review.
 
-### Scaling Strategies
-- **Horizontal Scaling**: Automatically adding more instances of your service behind a load balancer.
-- **Database Sharding**: Splitting your data across multiple database servers to avoid a single point of congestion.
-- **Global Load Balancing**: Routing users to the nearest healthy data center using Anycast or Latency-based routing.
+### Scaling for Millions
+When your **${title}** system needs to grow, we look at **Horizontal Scaling**—adding more instances of your app rather than just a bigger server. This requires your app to be **stateless**, meaning it doesn't store user data in memory between requests.
 
 ### 🧠 Knowledge Check
 - What is the difference between a Unit test and an Integration test?
-- Explain the "Canary Release" strategy.
-- What are the benefits of Infrastructure as Code?
-
-### Conclusion
-Congratulations! You have completed the professional curriculum for **${title}**. You now possess the architectural vision, implementation excellence, and operational mastery required to build world-class systems.
-
-**The journey doesn't end here. Go build something amazing.**`
+- Why is Horizontal Scaling preferred for modern systems?`
   });
 
-  // Page 7: Real-World Case Studies & Scaling
+  // Page 7: Real-World Case Studies
   pages.push({
-    title: "7. Scaling in the Real World",
-    content: `Theory meets reality. In this section, we look at how **${title}** scales when faced with millions of users, petabytes of data, and global distribution.
-
-### Handling the "Viral Spike"
-Imagine your app goes viral on social media. How does **${title}** handle a sudden 1000x spike in traffic?
-- **Horizontal Scaling**: Automatically adding more instances of your service behind a load balancer. This is the preferred way to scale modern applications.
-- **Database Sharding**: Splitting your data across multiple database servers to avoid a single point of congestion and improve write throughput.
-- **Global Load Balancing**: Routing users to the nearest healthy data center using Anycast or Latency-based routing, reducing latency for a global audience.
+    title: "7. Real-World Case Studies",
+    content: `Theory meets reality. In this section, we look at how **${title}** scales when faced with millions of users and global distribution.
 
 ### Lessons from the Tech Giants
-- **Netflix**: "Design for failure." Assume every service, network link, and database will fail at some point. Build your system to survive these failures gracefully using patterns like circuit breakers and fallbacks (Chaos Engineering).
+- **Netflix**: "Design for failure." Assume every service, network link, and database will fail at some point. Build your system to survive these failures gracefully using patterns like circuit breakers and fallbacks.
 - **Amazon**: "You build it, you run it." Developers are responsible for the operational health, performance, and security of their code in production, leading to better architectural decisions.
 
 ### 🧠 Knowledge Check
-- What is "Horizontal Scaling" vs. "Vertical Scaling"?
-- Explain the concept of "Chaos Engineering".
+- Explain the concept of "Design for Failure".
 - How do "Circuit Breakers" protect your application?`
   });
 
@@ -253,15 +178,9 @@ Imagine your app goes viral on social media. How does **${title}** handle a sudd
     content: `Congratulations! You have completed the professional curriculum for **${title}**. You have moved from basic understanding to a deep, architectural, and operational perspective.
 
 ### Summary of Your New Skills
-- **Architectural Vision**: You can now see the "big picture" and design systems that are built to last, scale, and evolve. You understand the trade-offs involved in every decision.
+- **Architectural Vision**: You can now see the "big picture" and design systems that are built to last, scale, and evolve.
 - **Implementation Excellence**: You write clean, type-safe, testable, and high-performance code using industry-standard patterns.
 - **Operational Mastery**: You understand how to deploy, monitor, secure, and scale your work in a professional production environment.
-
-### The Path Forward
-To truly solidify your knowledge, we recommend building a **${title} Master Project**:
-1. **The Core**: Implement a complex, real-world feature using the advanced patterns from Page 4.
-2. **The Shell**: Wrap it in a professional environment with strict linting, type-checking, and a comprehensive test suite.
-3. **The Edge**: Deploy it using a full CI/CD pipeline with automated testing and basic observability (logging/metrics).
 
 **The journey doesn't end here. It's just the beginning. Go build something amazing.**`
   });
@@ -300,17 +219,6 @@ To truly solidify your knowledge, we recommend building a **${title} Master Proj
       ],
       correctAnswer: 2,
       explanation: "The Strategy Pattern allows you to define a family of algorithms and switch between them at runtime without changing the client code."
-    },
-    {
-      question: "What is the benefit of using 'Type-Safe Environment Variables'?",
-      options: [
-        "It makes the application run faster",
-        "It prevents runtime crashes by validating configuration at startup",
-        "It hides secrets from the development team",
-        "It replaces the need for a database"
-      ],
-      correctAnswer: 1,
-      explanation: "Validating environment variables at startup ensures that the application has all required configuration in the correct format before it starts processing requests."
     },
     {
       question: "Why is the 'Result' object pattern often preferred over throwing errors?",
@@ -357,17 +265,6 @@ To truly solidify your knowledge, we recommend building a **${title} Master Proj
       explanation: "Unit tests are fast, reliable, and cheap to run, making them the foundation of a healthy testing suite."
     },
     {
-      question: "What is the main advantage of 'Infrastructure as Code' (IaC)?",
-      options: [
-        "It makes cloud providers cheaper",
-        "It allows infrastructure to be versioned, audited, and reproduced easily",
-        "It replaces the need for developers",
-        "It only works with Docker"
-      ],
-      correctAnswer: 1,
-      explanation: "IaC brings the benefits of software engineering (versioning, peer review, automation) to infrastructure management."
-    },
-    {
       question: "What is 'Horizontal Scaling'?",
       options: [
         "Adding more CPU and RAM to a single server",
@@ -377,6 +274,28 @@ To truly solidify your knowledge, we recommend building a **${title} Master Proj
       ],
       correctAnswer: 1,
       explanation: "Horizontal scaling involves adding more machines or instances to a pool, which is the standard way to scale modern distributed systems."
+    },
+    {
+      question: `Why is "Type Safety" critical for production systems in ${title}?`,
+      options: [
+        "It makes the code look more professional",
+        "It catches entire classes of bugs at compile-time before they reach users",
+        "It is required by most cloud providers",
+        "It automatically optimizes the database"
+      ],
+      correctAnswer: 1,
+      explanation: "Type safety uses the compiler to catch errors like null pointer exceptions or type mismatches, preventing them from causing runtime crashes."
+    },
+    {
+      question: "What is the core idea behind 'Design for Failure'?",
+      options: [
+        "Assume that everything will eventually fail and build resilience into the system",
+        "Only buy the most expensive hardware to prevent failure",
+        "Hire more developers to fix bugs faster",
+        "Don't deploy code on Fridays"
+      ],
+      correctAnswer: 0,
+      explanation: "Design for Failure assumes that components will fail and uses patterns like circuit breakers and fallbacks to ensure the overall system remains functional."
     }
   ];
 

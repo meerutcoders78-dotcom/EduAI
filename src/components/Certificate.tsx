@@ -1,8 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Award, Download, Box, X, Loader2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import domtoimage from 'dom-to-image-more';
+import { Award, Printer, Box, X } from 'lucide-react';
 
 interface CertificateProps {
   userName: string;
@@ -13,8 +10,6 @@ interface CertificateProps {
 
 export function Certificate({ userName, moduleTitle, date, onClose }: CertificateProps) {
   const certificateRef = useRef<HTMLDivElement>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-
   const [certScale, setCertScale] = useState(0.5);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -33,98 +28,35 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  const handleDownloadImage = async () => {
-    if (!certificateRef.current || isDownloading) return;
-    
-    setIsDownloading(true);
-    try {
-      const element = certificateRef.current;
-      
-      // We'll try dom-to-image-more first as it handles complex CSS better
-      // We need to ensure the element is visible and has no transforms during capture
-      const originalTransform = element.style.transform;
-      const originalMargin = element.style.marginBottom;
-      
-      element.style.transform = 'none';
-      element.style.marginBottom = '0';
-      
-      try {
-        const dataUrl = await domtoimage.toPng(element, {
-          width: 1200,
-          height: 848,
-          cacheBust: true,
-          bgcolor: '#0b1622',
-          style: {
-            transform: 'none',
-            margin: '0',
-            left: '0',
-            top: '0'
-          }
-        });
-
-        const link = document.createElement('a');
-        link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (domError) {
-        console.warn("dom-to-image failed, falling back to html2canvas", domError);
-        
-        // Fallback to html2canvas
-        const canvas = await html2canvas(element, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#0b1622',
-          width: 1200,
-          height: 848,
-        });
-
-        const dataUrl = canvas.toDataURL('image/png', 1.0);
-        const link = document.createElement('a');
-        link.download = `AbilitiesAI-Certificate-${moduleTitle.replace(/\s+/g, '-')}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } finally {
-        // Restore styles
-        element.style.transform = originalTransform;
-        element.style.marginBottom = originalMargin;
-      }
-    } catch (error) {
-      console.error("Download error", error);
-      alert("Unable to download certificate. Please try again.");
-    } finally {
-      setIsDownloading(false);
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   const displayName = userName || "Master Student";
 
   return (
-    <div className="bg-card border border-border w-full max-w-5xl rounded-[32px] overflow-hidden shadow-2xl relative mx-4 sm:mx-0">
+    <div className="bg-card border border-border w-full max-w-5xl rounded-[32px] overflow-hidden shadow-2xl relative mx-4 sm:mx-0 print:shadow-none print:border-none print:m-0 print:max-w-none print:rounded-none">
       {onClose && (
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:bg-secondary rounded-full transition-colors z-50"
+          className="absolute top-4 right-4 p-2 hover:bg-secondary rounded-full transition-colors z-50 print:hidden"
         >
           <X className="w-5 h-5 sm:w-6 h-6" />
         </button>
       )}
       
-      <div className="p-4 sm:p-8 text-center space-y-6">
-        <div className="space-y-1">
+      <div className="p-4 sm:p-8 text-center space-y-6 print:p-0 print:space-y-0">
+        <div className="space-y-1 print:hidden">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tighter text-primary">Congratulations!</h2>
           <p className="text-sm sm:text-base text-muted-foreground font-medium">You've officially mastered {moduleTitle}</p>
         </div>
         
         {/* Certificate Preview Container */}
-        <div ref={containerRef} className="relative border-4 border-blue-500/10 rounded-[24px] overflow-hidden bg-[#0b1622] w-full">
+        <div ref={containerRef} className="relative border-4 border-blue-500/10 rounded-[24px] overflow-hidden bg-[#0b1622] w-full print:border-none print:rounded-none print:bg-white">
           <div 
             ref={certificateRef}
             data-cert-container
-            className="relative bg-[#0b1622] overflow-hidden select-none"
+            className="relative bg-[#0b1622] overflow-hidden select-none print:scale-100 print:m-0 print:static print:w-[297mm] print:h-[210mm]"
             style={{ 
               width: '1200px', 
               height: '848px', 
@@ -134,7 +66,7 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
             }}
           >
             {/* ================= ROYAL BLUE & PURPLE GRADIENT ================= */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#0b1622] via-[#1e1b4b] to-[#2e1065] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0b1622] via-[#1e1b4b] to-[#2e1065] pointer-events-none print:from-[#0b1622] print:to-[#2e1065]" />
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,212,255,0.08),transparent_70%)] pointer-events-none" />
 
             {/* ================= CORNER BORDERS ================= */}
@@ -221,26 +153,49 @@ export function Certificate({ userName, moduleTitle, date, onClose }: Certificat
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 print:hidden">
           <button 
-            onClick={handleDownloadImage}
-            disabled={isDownloading}
-            className="w-full sm:w-auto px-12 py-4 bg-primary text-white rounded-2xl font-bold text-base flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handlePrint}
+            className="w-full sm:w-auto px-12 py-4 bg-primary text-white rounded-2xl font-bold text-base flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
           >
-            {isDownloading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" /> Generating...
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5" /> Download Certificate
-              </>
-            )}
+            <Printer className="w-5 h-5" /> Print / Save as PDF
           </button>
         </div>
         
-        <p className="text-xs text-muted-foreground font-medium">Your certificate is high-resolution and ready for printing or sharing.</p>
+        <p className="text-xs text-muted-foreground font-medium print:hidden">
+          Use "Print to PDF" in your browser for a high-quality digital copy.
+        </p>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page {
+            size: landscape;
+            margin: 0;
+          }
+          body * {
+            visibility: hidden;
+          }
+          .print\\:block, .print\\:block * {
+            visibility: visible;
+          }
+          /* Target the specific certificate container */
+          [data-cert-container], [data-cert-container] * {
+            visibility: visible;
+          }
+          [data-cert-container] {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            transform: none !important;
+            margin: 0 !important;
+            border: none !important;
+            border-radius: 0 !important;
+          }
+        }
+      `}} />
     </div>
   );
 }
