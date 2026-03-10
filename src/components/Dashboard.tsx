@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
+  Menu,
   BookOpen, 
   MessageSquare, 
   TrendingUp, 
@@ -282,7 +283,7 @@ export function Dashboard() {
               onClick={() => setIsMobileMenuOpen(true)}
               className="p-2 hover:bg-secondary rounded-xl transition-colors lg:hidden"
             >
-              <LayoutDashboard className="w-6 h-6 text-primary" />
+              <Menu className="w-6 h-6 text-primary" />
             </button>
             <div className="flex flex-col">
               <h2 className="text-lg lg:text-xl font-bold capitalize tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">

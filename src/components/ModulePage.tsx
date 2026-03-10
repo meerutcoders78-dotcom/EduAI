@@ -27,11 +27,19 @@ import { Certificate } from './Certificate';
 import { storageService } from '../services/storageService';
 import { generateModuleContent } from '../services/aiService';
 
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
 interface ModulePageContent {
   pages: {
     title: string;
     content: string;
   }[];
+  quiz: QuizQuestion[];
 }
 
 export function ModulePage() {
@@ -46,6 +54,10 @@ export function ModulePage() {
   const [isMarking, setIsMarking] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<number[]>(new Array(10).fill(-1));
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+  const [showQuizFeedback, setShowQuizFeedback] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const moduleInfo = MODULES.find(m => m.id === moduleId) || MODULES[0];
@@ -55,7 +67,6 @@ export function ModulePage() {
       setIsLoading(true);
       setInstallProgress(0);
       
-      // Simulate installation progress
       const interval = setInterval(() => {
         setInstallProgress(prev => {
           if (prev >= 95) return prev;
@@ -69,11 +80,7 @@ export function ModulePage() {
         setInstallProgress(100);
       } catch (error: any) {
         console.error("Failed to fetch module content", error);
-        if (error.message?.includes('429') || error.message?.includes('RESOURCE_EXHAUSTED')) {
-          setError("Our AI servers are currently busy helping other students. Please try again in a few minutes.");
-        } else {
-          setError("Failed to install module. Please try again.");
-        }
+        setError("Failed to install module. Please try again.");
       } finally {
         clearInterval(interval);
         setTimeout(() => setIsLoading(false), 800);
@@ -94,29 +101,25 @@ export function ModulePage() {
     fetchProgress();
   }, [moduleId, user]);
 
-  // Handle scroll to bottom for auto-completion
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!scrollRef.current || isLoading || !moduleContent) return;
-      
-      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      // If we are on the last page and scrolled to bottom
-      if (currentPage === moduleContent.pages.length - 1) {
-        if (scrollHeight - scrollTop <= clientHeight + 50) {
-          if (!completedModules.includes(moduleId!)) {
-            handleCompleteModule();
-          } else {
-            // Already completed, just show the certificate modal
-            setShowCertificateModal(true);
-          }
-        }
+  const handleQuizSubmit = () => {
+    if (!moduleContent) return;
+    
+    let score = 0;
+    quizAnswers.forEach((answer, index) => {
+      if (answer === moduleContent.quiz[index].correctAnswer) {
+        score++;
       }
-    };
+    });
 
-    const currentScrollRef = scrollRef.current;
-    currentScrollRef?.addEventListener('scroll', handleScroll);
-    return () => currentScrollRef?.removeEventListener('scroll', handleScroll);
-  }, [currentPage, moduleContent, isLoading, completedModules]);
+    const percentage = (score / moduleContent.quiz.length) * 100;
+    setQuizScore(score);
+    setQuizSubmitted(true);
+    setShowQuizFeedback(true);
+
+    if (percentage >= 75) {
+      handleCompleteModule();
+    }
+  };
 
   const handleCompleteModule = async () => {
     if (!user || isMarking || !moduleId) return;
@@ -149,12 +152,136 @@ export function ModulePage() {
         setShowCertificateModal(true);
       } else {
         setError("Failed to issue certificate.");
-        // Show error briefly
         setTimeout(() => setError(null), 5000);
       }
     } catch (error) {
       console.error("Certificate error", error);
     }
+  };
+
+  const renderQuiz = () => {
+    if (!moduleContent) return null;
+
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="p-6 lg:p-10 bg-primary/5 border border-primary/20 rounded-[32px] text-center space-y-4">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+            <Sparkles className="w-8 h-8 text-primary" />
+          </div>
+          <h3 className="text-2xl lg:text-3xl font-black tracking-tight">Final Assessment</h3>
+          <p className="text-muted-foreground font-medium max-w-md mx-auto">
+            Test your knowledge of {moduleInfo.title}. You need at least 75% (8/10) to earn your professional certificate.
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          {moduleContent.quiz.map((q, qIndex) => (
+            <div key={qIndex} className="p-6 lg:p-8 bg-card border border-border rounded-[24px] lg:rounded-[32px] shadow-sm space-y-4">
+              <div className="flex items-start gap-4">
+                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold">{qIndex + 1}</span>
+                <p className="text-base lg:text-lg font-bold leading-tight pt-1">{q.question}</p>
+              </div>
+              <div className="grid gap-3 pl-12">
+                {q.options.map((option, oIndex) => {
+                  const isSelected = quizAnswers[qIndex] === oIndex;
+                  const isCorrect = q.correctAnswer === oIndex;
+                  const showResult = quizSubmitted;
+
+                  return (
+                    <button
+                      key={oIndex}
+                      onClick={() => {
+                        if (quizSubmitted) return;
+                        const newAnswers = [...quizAnswers];
+                        newAnswers[qIndex] = oIndex;
+                        setQuizAnswers(newAnswers);
+                      }}
+                      disabled={quizSubmitted}
+                      className={cn(
+                        "p-4 rounded-xl lg:rounded-2xl text-left text-sm font-medium transition-all border-2",
+                        isSelected && !showResult && "border-primary bg-primary/5",
+                        !isSelected && !showResult && "border-transparent bg-secondary/50 hover:bg-secondary hover:border-border",
+                        showResult && isCorrect && "border-emerald-500 bg-emerald-500/10 text-emerald-700",
+                        showResult && isSelected && !isCorrect && "border-destructive bg-destructive/10 text-destructive",
+                        showResult && !isSelected && !isCorrect && "border-transparent bg-secondary/30 opacity-50"
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{option}</span>
+                        {showResult && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                        {showResult && isSelected && !isCorrect && <X className="w-4 h-4 text-destructive" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {quizSubmitted && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="pl-12 pt-2"
+                >
+                  <p className="text-xs font-medium text-muted-foreground bg-secondary/30 p-3 rounded-xl border border-border/50 italic">
+                    <span className="font-bold text-primary not-italic">Explanation:</span> {q.explanation}
+                  </p>
+                </motion.div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {!quizSubmitted ? (
+          <button
+            onClick={handleQuizSubmit}
+            disabled={quizAnswers.includes(-1)}
+            className="w-full py-6 bg-primary text-white rounded-[24px] font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:scale-100"
+          >
+            Submit Assessment
+          </button>
+        ) : (
+          <div className={cn(
+            "p-8 lg:p-12 rounded-[40px] text-center space-y-6 border-4",
+            quizScore >= 8 ? "bg-emerald-500/10 border-emerald-500/30" : "bg-destructive/10 border-destructive/30"
+          )}>
+            <div className={cn(
+              "w-20 h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center mx-auto",
+              quizScore >= 8 ? "bg-emerald-500/20" : "bg-destructive/20"
+            )}>
+              {quizScore >= 8 ? <Award className="w-10 h-10 lg:w-12 lg:h-12 text-emerald-500" /> : <X className="w-10 h-10 lg:w-12 lg:h-12 text-destructive" />}
+            </div>
+            <div>
+              <h3 className={cn(
+                "text-3xl lg:text-4xl font-black tracking-tighter",
+                quizScore >= 8 ? "text-emerald-600" : "text-destructive"
+              )}>
+                {quizScore >= 8 ? "Assessment Passed!" : "Assessment Failed"}
+              </h3>
+              <p className="text-lg lg:text-xl font-bold mt-2">Your Score: {quizScore}/10 ({quizScore * 10}%)</p>
+            </div>
+            
+            <p className="text-muted-foreground font-medium max-w-md mx-auto">
+              {quizScore >= 8 
+                ? "Excellent work! You've demonstrated professional mastery of this topic. Your certificate is now available."
+                : "Don't worry! Engineering is about persistence. Review the module content and try the assessment again to earn your certificate."}
+            </p>
+
+            {quizScore < 8 && (
+              <button
+                onClick={() => {
+                  setQuizSubmitted(false);
+                  setQuizAnswers(new Array(10).fill(-1));
+                  setCurrentPage(0);
+                  scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="px-10 py-4 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-primary/20"
+              >
+                Review & Retake
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -167,12 +294,12 @@ export function ModulePage() {
           </Link>
           <div className="min-w-0">
             <h1 className="text-sm lg:text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 truncate max-w-[120px] sm:max-w-none">{moduleInfo.title}</h1>
-            <p className="text-[8px] lg:text-xs text-muted-foreground font-medium truncate">Production-Ready Curriculum</p>
+            <p className="text-[8px] lg:text-xs text-muted-foreground font-medium truncate">Professional Learning Path</p>
           </div>
         </div>
         <div className="flex items-center gap-3 lg:gap-6">
           <div className="hidden sm:flex flex-col items-end">
-            <span className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Module Progress</span>
+            <span className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Progress</span>
             <div className="w-24 lg:w-32 h-1 lg:h-1.5 bg-secondary rounded-full mt-1 overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
@@ -218,8 +345,8 @@ export function ModulePage() {
               </div>
             </div>
             <div className="text-center space-y-4 max-w-sm px-4">
-              <h2 className="text-2xl lg:text-3xl font-black tracking-tighter">Installing Module...</h2>
-              <p className="text-sm lg:text-base text-muted-foreground font-medium">Configuring technical curriculum and production guides for {moduleInfo.title}.</p>
+              <h2 className="text-2xl lg:text-3xl font-black tracking-tighter">Preparing Curriculum...</h2>
+              <p className="text-sm lg:text-base text-muted-foreground font-medium">Loading high-depth technical content and assessment for {moduleInfo.title}.</p>
               <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
@@ -249,7 +376,7 @@ export function ModulePage() {
 
               <div 
                 ref={scrollRef}
-                className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-10 shadow-sm markdown-body prose prose-slate dark:prose-invert max-w-none h-[500px] lg:h-[600px] overflow-y-auto custom-scrollbar"
+                className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-10 shadow-sm markdown-body prose prose-slate dark:prose-invert max-w-none min-h-[500px] lg:min-h-[600px] overflow-visible"
               >
                 <motion.div
                   key={currentPage}
@@ -257,17 +384,21 @@ export function ModulePage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Markdown>{moduleContent?.pages[currentPage].content}</Markdown>
+                  {currentPage === (moduleContent?.pages.length || 0) - 1 ? (
+                    renderQuiz()
+                  ) : (
+                    <Markdown>{moduleContent?.pages[currentPage].content}</Markdown>
+                  )}
                 </motion.div>
                 
-                {currentPage === (moduleContent?.pages.length || 0) - 1 && (
+                {currentPage === (moduleContent?.pages.length || 0) - 1 && quizSubmitted && quizScore >= 8 && (
                   <div className="mt-10 lg:mt-20 p-6 lg:p-10 border-2 border-dashed border-emerald-500/30 rounded-[32px] bg-emerald-500/5 text-center space-y-6">
                     <div className="w-16 h-16 lg:w-20 lg:h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto">
                       <CheckCircle2 className="w-8 h-8 lg:w-10 lg:h-10 text-emerald-500" />
                     </div>
                     <div className="max-w-md mx-auto">
                       <h3 className="text-xl lg:text-2xl font-black tracking-tight text-emerald-600">Module Complete!</h3>
-                      <p className="text-sm lg:text-base text-muted-foreground font-medium">You've reached the end of the curriculum. Click below to claim your professional certificate.</p>
+                      <p className="text-sm lg:text-base text-muted-foreground font-medium">You've passed the assessment. Click below to claim your professional certificate.</p>
                     </div>
                     <button 
                       onClick={handleCompleteModule}
@@ -302,7 +433,7 @@ export function ModulePage() {
                 <button
                   onClick={() => {
                     setCurrentPage(prev => Math.max(0, prev - 1));
-                    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   disabled={currentPage === 0}
                   className="w-full sm:w-auto px-6 py-3 rounded-xl lg:rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-secondary transition-all disabled:opacity-50"
@@ -326,13 +457,13 @@ export function ModulePage() {
                   onClick={() => {
                     if (currentPage < (moduleContent?.pages.length || 0) - 1) {
                       setCurrentPage(prev => prev + 1);
-                      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                   }}
-                  disabled={currentPage === (moduleContent?.pages.length || 0) - 1}
+                  disabled={currentPage === (moduleContent?.pages.length || 0) - 1 || (currentPage === (moduleContent?.pages.length || 0) - 2 && !quizSubmitted)}
                   className="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl lg:rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
                 >
-                  Next Page <ChevronRight className="w-5 h-5" />
+                  {currentPage === (moduleContent?.pages.length || 0) - 2 ? "Take Quiz" : "Next Page"} <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -362,12 +493,12 @@ export function ModulePage() {
                 <div className="mt-8 lg:mt-10 p-5 lg:p-6 bg-primary/5 rounded-[20px] lg:rounded-[24px] border border-primary/10 relative z-10">
                   <div className="flex items-center gap-2 mb-3">
                     <SparklesIcon className="w-3.5 h-3.5 lg:w-4 h-4 text-primary" />
-                    <p className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Module Status</p>
+                    <p className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Status</p>
                   </div>
                   <p className="text-[10px] lg:text-xs text-muted-foreground leading-relaxed font-medium">
                     {completedModules.includes(moduleId!) 
                       ? "You have successfully completed this module and earned your certificate." 
-                      : "Read through all pages and scroll to the bottom of the last page to complete."}
+                      : "Complete all pages and pass the final assessment with 75% or higher to earn your certificate."}
                   </p>
                 </div>
               </div>
