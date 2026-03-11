@@ -87,9 +87,15 @@ export const generateSkillRoadmap = async (skill: string) => {
 
 export const generateModuleContent = async (moduleTitle: string) => {
   // 1. Check preloaded data first (Explicitly defined high-quality content)
-  if (preloadedModules[moduleTitle as keyof typeof preloadedModules]) {
+  const preloaded = preloadedModules[moduleTitle as keyof typeof preloadedModules] as any;
+  if (preloaded) {
     console.log(`[AI Service] Using preloaded content for: ${moduleTitle}`);
-    return preloadedModules[moduleTitle as keyof typeof preloadedModules];
+    // Ensure it has a quiz
+    if (!preloaded.quiz || preloaded.quiz.length === 0) {
+      const staticData = generateStaticModuleContent(moduleTitle);
+      return { ...preloaded, quiz: staticData.quiz };
+    }
+    return preloaded;
   }
 
   // 2. Check cache for previously generated content

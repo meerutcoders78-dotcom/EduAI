@@ -77,6 +77,7 @@ export function ModulePage() {
       try {
         const data = await generateModuleContent(moduleInfo.title);
         setModuleContent(data);
+        setQuizAnswers(new Array(data.quiz.length).fill(-1));
         setInstallProgress(100);
       } catch (error: any) {
         console.error("Failed to fetch module content", error);
@@ -309,11 +310,15 @@ export function ModulePage() {
             </div>
           </div>
           <div className="h-6 lg:h-8 w-px bg-border hidden sm:block" />
-          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
             <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <BookOpen className="w-3.5 h-3.5 lg:w-4 h-4 text-primary" />
             </div>
-            <span className="text-xs lg:text-sm font-bold whitespace-nowrap">Page {currentPage + 1} of {moduleContent?.pages.length || 10}</span>
+            <span className="text-xs lg:text-sm font-bold whitespace-nowrap">
+              {currentPage < (moduleContent?.pages.length || 0) 
+                ? `Page ${currentPage + 1} of ${moduleContent?.pages.length || 10}`
+                : "Final Assessment"}
+            </span>
           </div>
         </div>
       </header>
@@ -366,10 +371,14 @@ export function ModulePage() {
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
                     <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[8px] lg:text-[10px] font-bold uppercase tracking-widest">{moduleInfo.category}</span>
-                    <span className="text-[10px] lg:text-xs text-muted-foreground font-medium">Page {currentPage + 1}</span>
+                    <span className="text-[10px] lg:text-xs text-muted-foreground font-medium">
+                      {currentPage < (moduleContent?.pages.length || 0) ? `Page ${currentPage + 1}` : "Assessment"}
+                    </span>
                   </div>
                   <h2 className="text-2xl lg:text-4xl font-black tracking-tighter mb-4 lg:mb-6 gradient-text animate-gradient">
-                    {moduleContent?.pages[currentPage].title}
+                    {currentPage < (moduleContent?.pages.length || 0) 
+                      ? moduleContent?.pages[currentPage].title 
+                      : "Final Knowledge Check"}
                   </h2>
                 </div>
               </section>
@@ -384,10 +393,10 @@ export function ModulePage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {currentPage === (moduleContent?.pages.length || 0) - 1 ? (
+                  {currentPage >= (moduleContent?.pages.length || 0) ? (
                     renderQuiz()
                   ) : (
-                    <Markdown>{moduleContent?.pages[currentPage].content}</Markdown>
+                    <Markdown>{moduleContent?.pages[currentPage]?.content || ""}</Markdown>
                   )}
                 </motion.div>
                 
@@ -455,15 +464,15 @@ export function ModulePage() {
 
                 <button
                   onClick={() => {
-                    if (currentPage < (moduleContent?.pages.length || 0) - 1) {
+                    if (currentPage < (moduleContent?.pages.length || 0)) {
                       setCurrentPage(prev => prev + 1);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                   }}
-                  disabled={currentPage === (moduleContent?.pages.length || 0) - 1}
+                  disabled={currentPage >= (moduleContent?.pages.length || 0)}
                   className="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl lg:rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
                 >
-                  {currentPage === (moduleContent?.pages.length || 0) - 2 ? "Take Quiz" : "Next Page"} <ChevronRight className="w-5 h-5" />
+                  {currentPage === (moduleContent?.pages.length || 0) - 1 ? "Start Quiz" : "Next Page"} <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
