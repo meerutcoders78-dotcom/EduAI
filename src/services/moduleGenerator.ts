@@ -33,6 +33,10 @@ The modern economy rewards those who can bridge the gap between abstract concept
 - **Drive Innovation**: Understand the constraints and possibilities of the technology to push boundaries.
 - **Future-Proof Your Career**: Tools change, but the underlying logic of **${title}** remains constant.
 
+> **Visual: The Skill Hierarchy Graph**
+> [ Fundamental Logic ] --> [ Architectural Patterns ] --> [ Frameworks/Tools ]
+> *Mastering the base (Logic) makes the top (Tools) easy to swap.*
+
 ### The Abilities AI Approach
 We don't just teach you syntax. We build your **Architectural Intuition**. Our curriculum is built on three pillars:
 1. **First Principles Thinking**: We explain the *why* so you can adapt to any *how*.
@@ -56,6 +60,10 @@ Think of your system in layers. At the very center is your **Domain Logic**â€”th
 - **Inner Core**: Pure logic, no dependencies. This is the most stable part of your app.
 - **Application Layer**: Orchestrates the flow of data.
 - **Infrastructure Layer**: The "outer shell" where databases, APIs, and UIs live.
+
+> **Graph: Onion Architecture Layers**
+> ( ( ( Domain Logic ) Application Services ) Infrastructure/UI )
+> *Arrows always point inward. The core never knows about the outside world.*
 
 ### Why This Matters
 By decoupling your core logic from the "outer shell," you make your system **testable** and **evolvable**. If you need to switch from a SQL database to a NoSQL one, your core logic remains untouched.
@@ -94,19 +102,36 @@ Instead of a generic \`handleData(x)\`, use \`processUserOnboarding(userData)\`.
     title: "4. Advanced Patterns for Masters",
     content: `As you move towards expert status in **${title}**, you'll encounter problems that simple logic can't solve. This is where **Design Patterns** come in.
 
-### The Strategy Pattern
+### The Strategy Pattern in Action
 Imagine you have multiple ways to process a request (e.g., different payment methods). Instead of a giant \`if/else\` block, use the **Strategy Pattern**.
-- Define an interface for the operation.
-- Create separate classes for each strategy.
-- Select the strategy at runtime.
-*Result: Your code becomes modular and easy to extend.*
+
+**Example Implementation:**
+\`\`\`typescript
+interface PaymentStrategy {
+  process(amount: number): void;
+}
+
+class StripeStrategy implements PaymentStrategy {
+  process(amount: number) { /* Stripe logic */ }
+}
+
+class PayPalStrategy implements PaymentStrategy {
+  process(amount: number) { /* PayPal logic */ }
+}
+\`\`\`
 
 ### The Result Object Pattern
 Stop throwing errors for expected failures. Instead, return a **Result Object** that explicitly contains either a \`Success\` value or a \`Failure\` reason.
 \`\`\`typescript
-type Result<T> = { success: true; data: T } | { success: false; error: string };
+type Result<T> = 
+  | { success: true; data: T } 
+  | { success: false; error: string };
 \`\`\`
 This forces you to handle the error case, leading to much more resilient systems.
+
+> **Visual: Error Flow Comparison**
+> Traditional: [ Code ] --(Exception)--> [ Crash/Catch ]
+> Result Pattern: [ Code ] --(Object)--> [ Explicit Handling ]
 
 ### ðŸ§  Knowledge Check
 - How does the Strategy Pattern improve code maintainability?
@@ -130,6 +155,10 @@ Monitor these four signals to understand your system's health:
 - **Principle of Least Privilege**: Every component should only have the permissions it absolutely needs to function.
 - **Dependency Auditing**: Regularly check your third-party libraries for known vulnerabilities.
 
+> **Visual: Security Layers**
+> [ Firewall ] -> [ Load Balancer ] -> [ Auth Layer ] -> [ App Logic ] -> [ Database ]
+> *Each layer is a point of defense.*
+
 **Security isn't a feature; it's a foundation.**`
   });
 
@@ -142,6 +171,12 @@ Monitor these four signals to understand your system's health:
 - **Unit Tests (Base)**: Test individual functions in isolation. Fast and numerous.
 - **Integration Tests (Middle)**: Test how components work together.
 - **E2E Tests (Top)**: Test the entire user journey. Slow but critical for confidence.
+
+> **Graph: Testing Pyramid**
+>       / E2E \\      <-- Fewest
+>      /  Int  \\
+>     /   Unit  \\    <-- Most
+>    -----------
 
 ### CI/CD: Automated Excellence
 In a professional environment, we use **Continuous Integration and Deployment**. Every change is automatically:
@@ -167,6 +202,10 @@ When your **${title}** system needs to grow, we look at **Horizontal Scaling**â€
 - **Netflix**: "Design for failure." Assume every service, network link, and database will fail at some point. Build your system to survive these failures gracefully using patterns like circuit breakers and fallbacks.
 - **Amazon**: "You build it, you run it." Developers are responsible for the operational health, performance, and security of their code in production, leading to better architectural decisions.
 
+### Case Study: The "Thundering Herd" Problem
+Imagine a million users hitting your **${title}** service at the exact same second. Without proper **Rate Limiting** and **Caching**, your system will collapse.
+- **Solution**: Implement Exponential Backoff and Jitter on the client side, and robust caching on the server side.
+
 ### ðŸ§  Knowledge Check
 - Explain the concept of "Design for Failure".
 - How do "Circuit Breakers" protect your application?`
@@ -181,6 +220,12 @@ When your **${title}** system needs to grow, we look at **Horizontal Scaling**â€
 - **Architectural Vision**: You can now see the "big picture" and design systems that are built to last, scale, and evolve.
 - **Implementation Excellence**: You write clean, type-safe, testable, and high-performance code using industry-standard patterns.
 - **Operational Mastery**: You understand how to deploy, monitor, secure, and scale your work in a professional production environment.
+
+### The Path Forward
+To truly master **${title}**, you must apply these principles.
+1. **Build a Portfolio Project**: Create a production-grade application using the patterns learned here.
+2. **Contribute to Open Source**: See how these patterns are applied in large-scale community projects.
+3. **Stay Curious**: The tech landscape changes, but the first principles you've learned here are your compass.
 
 **The journey doesn't end here. It's just the beginning. Go build something amazing.**`
   });

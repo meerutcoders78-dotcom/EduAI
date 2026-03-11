@@ -58,6 +58,7 @@ export function ModulePage() {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [showQuizFeedback, setShowQuizFeedback] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const moduleInfo = MODULES.find(m => m.id === moduleId) || MODULES[0];
@@ -286,19 +287,41 @@ export function ModulePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 selection:bg-primary/20">
+    <div className={cn(
+      "min-h-screen bg-background pb-20 selection:bg-primary/20 transition-all duration-500",
+      isFullScreen && "fixed inset-0 z-[100] pb-0 overflow-y-auto"
+    )}>
       {/* Header */}
-      <header className="h-16 lg:h-20 border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-6 flex items-center justify-between">
+      <header className={cn(
+        "h-16 lg:h-20 border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-6 flex items-center justify-between transition-all",
+        isFullScreen && "lg:h-16"
+      )}>
         <div className="flex items-center gap-3 lg:gap-4">
-          <Link to="/dashboard" className="p-2 hover:bg-secondary rounded-xl transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
+          {!isFullScreen && (
+            <Link to="/dashboard" className="p-2 hover:bg-secondary rounded-xl transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          )}
           <div className="min-w-0">
             <h1 className="text-sm lg:text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 truncate max-w-[120px] sm:max-w-none">{moduleInfo.title}</h1>
             <p className="text-[8px] lg:text-xs text-muted-foreground font-medium truncate">Professional Learning Path</p>
           </div>
         </div>
         <div className="flex items-center gap-3 lg:gap-6">
+          <button 
+            onClick={() => setIsFullScreen(!isFullScreen)}
+            className="p-2 hover:bg-secondary rounded-xl transition-colors flex items-center gap-2 text-xs font-bold text-primary"
+          >
+            {isFullScreen ? (
+              <>
+                <X className="w-4 h-4" /> Exit Full Screen
+              </>
+            ) : (
+              <>
+                <ExternalLink className="w-4 h-4" /> Full Screen
+              </>
+            )}
+          </button>
           <div className="hidden sm:flex flex-col items-end">
             <span className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Progress</span>
             <div className="w-24 lg:w-32 h-1 lg:h-1.5 bg-secondary rounded-full mt-1 overflow-hidden">
@@ -323,7 +346,10 @@ export function ModulePage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 lg:px-6 pt-6 lg:pt-10 max-w-5xl">
+      <main className={cn(
+        "container mx-auto px-4 lg:px-6 pt-6 lg:pt-10 transition-all duration-500",
+        isFullScreen ? "max-w-7xl pb-20" : "max-w-5xl"
+      )}>
         <AnimatePresence>
           {error && (
             <motion.div 
@@ -363,7 +389,10 @@ export function ModulePage() {
             </div>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_300px] gap-6 lg:gap-10">
+          <div className={cn(
+            "grid gap-6 lg:gap-10",
+            isFullScreen ? "lg:grid-cols-1" : "lg:grid-cols-[1fr_300px]"
+          )}>
             {/* Content */}
             <div className="space-y-6 lg:space-y-10">
               <section className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-10 shadow-sm relative overflow-hidden group">
@@ -375,7 +404,10 @@ export function ModulePage() {
                       {currentPage < (moduleContent?.pages.length || 0) ? `Page ${currentPage + 1}` : "Assessment"}
                     </span>
                   </div>
-                  <h2 className="text-2xl lg:text-4xl font-black tracking-tighter mb-4 lg:mb-6 gradient-text animate-gradient">
+                  <h2 className={cn(
+                    "font-black tracking-tighter mb-4 lg:mb-6 gradient-text animate-gradient",
+                    isFullScreen ? "text-3xl lg:text-6xl" : "text-2xl lg:text-4xl"
+                  )}>
                     {currentPage < (moduleContent?.pages.length || 0) 
                       ? moduleContent?.pages[currentPage].title 
                       : "Final Knowledge Check"}
@@ -385,7 +417,10 @@ export function ModulePage() {
 
               <div 
                 ref={scrollRef}
-                className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-10 shadow-sm markdown-body prose prose-slate dark:prose-invert max-w-none min-h-[500px] lg:min-h-[600px] overflow-visible"
+                className={cn(
+                  "bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-10 shadow-sm markdown-body prose prose-slate dark:prose-invert max-w-none min-h-[500px] lg:min-h-[600px] overflow-visible",
+                  isFullScreen && "prose-lg lg:prose-xl"
+                )}
               >
                 <motion.div
                   key={currentPage}
@@ -478,40 +513,42 @@ export function ModulePage() {
             </div>
 
             {/* Sidebar */}
-            <aside className="space-y-6 lg:space-y-8 pb-10 lg:pb-0">
-              <div className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-8 shadow-sm lg:sticky lg:top-28 overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
-                <h3 className="text-lg lg:text-xl font-bold mb-6 lg:mb-8 flex items-center gap-3 relative z-10">
-                  <Code className="w-5 h-5 lg:w-6 h-6 text-primary" /> Resources
-                </h3>
-                <div className="space-y-3 lg:space-y-4 relative z-10">
-                  {moduleInfo.resources.map((res, i) => (
-                    <a 
-                      key={i}
-                      href={res.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 lg:p-5 bg-secondary/50 rounded-xl lg:rounded-2xl hover:bg-primary hover:text-white transition-all group"
-                    >
-                      <span className="text-xs lg:text-sm font-bold">{res.name}</span>
-                      <ExternalLink className="w-3.5 h-3.5 lg:w-4 h-4 opacity-50 group-hover:opacity-100" />
-                    </a>
-                  ))}
-                </div>
-
-                <div className="mt-8 lg:mt-10 p-5 lg:p-6 bg-primary/5 rounded-[20px] lg:rounded-[24px] border border-primary/10 relative z-10">
-                  <div className="flex items-center gap-2 mb-3">
-                    <SparklesIcon className="w-3.5 h-3.5 lg:w-4 h-4 text-primary" />
-                    <p className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Status</p>
+            {!isFullScreen && (
+              <aside className="space-y-6 lg:space-y-8 pb-10 lg:pb-0">
+                <div className="bg-card border border-border rounded-[24px] lg:rounded-[32px] p-6 lg:p-8 shadow-sm lg:sticky lg:top-28 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+                  <h3 className="text-lg lg:text-xl font-bold mb-6 lg:mb-8 flex items-center gap-3 relative z-10">
+                    <Code className="w-5 h-5 lg:w-6 h-6 text-primary" /> Resources
+                  </h3>
+                  <div className="space-y-3 lg:space-y-4 relative z-10">
+                    {moduleInfo.resources.map((res, i) => (
+                      <a 
+                        key={i}
+                        href={res.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-4 lg:p-5 bg-secondary/50 rounded-xl lg:rounded-2xl hover:bg-primary hover:text-white transition-all group"
+                      >
+                        <span className="text-xs lg:text-sm font-bold">{res.name}</span>
+                        <ExternalLink className="w-3.5 h-3.5 lg:w-4 h-4 opacity-50 group-hover:opacity-100" />
+                      </a>
+                    ))}
                   </div>
-                  <p className="text-[10px] lg:text-xs text-muted-foreground leading-relaxed font-medium">
-                    {completedModules.includes(moduleId!) 
-                      ? "You have successfully completed this module and earned your certificate." 
-                      : "Complete all pages and pass the final assessment with 75% or higher to earn your certificate."}
-                  </p>
+
+                  <div className="mt-8 lg:mt-10 p-5 lg:p-6 bg-primary/5 rounded-[20px] lg:rounded-[24px] border border-primary/10 relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <SparklesIcon className="w-3.5 h-3.5 lg:w-4 h-4 text-primary" />
+                      <p className="text-[8px] lg:text-[10px] font-bold uppercase tracking-widest text-primary">Status</p>
+                    </div>
+                    <p className="text-[10px] lg:text-xs text-muted-foreground leading-relaxed font-medium">
+                      {completedModules.includes(moduleId!) 
+                        ? "You have successfully completed this module and earned your certificate." 
+                        : "Complete all pages and pass the final assessment with 75% or higher to earn your certificate."}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
+            )}
           </div>
         )}
       </main>

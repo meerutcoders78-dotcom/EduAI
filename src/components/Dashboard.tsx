@@ -768,15 +768,20 @@ function SidebarItem({ icon, label, active, onClick, collapsed }: {
         active 
           ? "bg-primary text-white shadow-lg shadow-primary/30" 
           : "hover:bg-secondary text-muted-foreground hover:text-foreground",
-        collapsed && "justify-center"
+        collapsed ? "lg:justify-center" : "justify-start"
       )}
     >
-      <span className={cn("w-5 h-5 transition-transform group-hover:scale-110", active && "scale-110")}>{icon}</span>
-      {!collapsed && <span className="font-bold text-sm whitespace-nowrap">{label}</span>}
+      <span className={cn("w-5 h-5 transition-transform group-hover:scale-110 shrink-0", active && "scale-110")}>{icon}</span>
+      <span className={cn(
+        "font-bold text-sm whitespace-nowrap transition-all duration-300",
+        collapsed ? "lg:hidden opacity-0 lg:w-0" : "opacity-100 w-auto"
+      )}>
+        {label}
+      </span>
       {active && !collapsed && (
         <motion.div 
           layoutId="sidebar-active"
-          className="absolute right-4 w-1.5 h-1.5 rounded-full bg-white"
+          className="absolute right-4 w-1.5 h-1.5 rounded-full bg-white hidden lg:block"
         />
       )}
     </button>
